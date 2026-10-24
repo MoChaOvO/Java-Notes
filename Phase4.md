@@ -195,6 +195,20 @@
 
 
 
+## 2. serialVersionUID
+
+Java 序列化机制使用的"类版本号"，保证"序列化时"和"反序列化时"的**类版本一致**，否则拒绝反序列化
+
+- 类型固定：`private static final long`
+- 名字固定：**必须叫 `serialVersionUID`**，大小写都不能错
+- 它是一个**标记字段**，不参与业务，只被序列化机制使用
+
+
+
+
+
+
+
 
 
 # 1. Mybatis-Plus
@@ -3861,7 +3875,7 @@ flowchart TD
 
 #### 权限控制
 
-##### 认证（Authentication）
+##### 1. 认证（Authentication）
 
 认证是用户**登录**系统时，通过比较用户提供的凭证（如用户名和密码）与系统中存储的信息是否一致，以验证用户身份是否有效的过程
 
@@ -3882,4 +3896,330 @@ flowchart TD
     I --> J[返回]
 ```
 
-# 待补2
+##### 2. 授权（Authorization）
+
+- 授权就是用户登录后(认证后)，控制用户是否有权限访问某些资源
+- 给用户赋予角色，并且可以可以赋予多个角色
+
+
+
+
+
+#### 权限验证
+
+一个请求过来之后，需要有诸多的校验来能判断是否能有效访问
+
+```mermaid
+flowchart LR
+    %% 定义节点形状和样式
+    Req[请求]
+    ReqList[/nursing/elder/save<br>/nursing/elder/delete<br>/login<br>/doc.html/]
+    
+    IsExclude{url是否需<br>要放行}
+    IsTokenValid{token是<br>否有效}
+    HasPerm{是否有权<br>限访问}
+    
+    Pass[放行]
+    AuthFail[认证失败]
+    NoPerm[没有权限]
+
+    %% 定义节点之间的连线
+    Req --> IsExclude
+    IsExclude -- 是 --> Pass
+    IsExclude -- 否 --> IsTokenValid
+    
+    IsTokenValid -- 是 --> HasPerm
+    IsTokenValid -- 否 --> AuthFail
+    
+    HasPerm -- 是 --> Pass
+    HasPerm -- 否 --> NoPerm
+
+    %% 将请求路径文本关联到请求节点下方（用虚线连接模拟图例效果）
+    Req -.-> ReqList
+
+    %% 自定义样式（尽量还原原图配色）
+    classDef default fill:#fff,stroke:#333,stroke-width:1.5px,color:#333;
+    classDef diamond fill:#fff3d1,stroke:#333,stroke-width:1.5px;
+    classDef box fill:#f4f6ff,stroke:#333,stroke-width:1.5px;
+    
+    class IsExclude,IsTokenValid,HasPerm diamond;
+    class Pass,AuthFail,NoPerm,Req box;
+```
+
+- 请求来了以后，如果是 `doc.html` 或 `login`，是一个静态资源，可以直接放行，在 **SecurityConfig** 可以配置放行接口
+- 请求来了以后，如果是`/nursing/elder/save`，在 SecurityConfig 没有配置放行，需要校验当前请求携带的token是否有效，**如果token无效，则是认证失败**，需要重新认证（跳转到登录页）
+- 请求来了以后，如果是`/nursing/elder/save`，在 SecurityConfig 没有配置放行，token也有效，则**判断当前登录人是否拥有该权限(认证成功后，可以获取用户的权限列表)**
+    - 如果有权限，则放行
+    - 如果没权限，则提醒权限不足
+
+核心代码位置：在 zzyl-framework 模块中找到类：`com.zzyl.framework.config.SecurityConfig`
+
+具体的 **url 校验**是通过 Spring Security 的提供的**权限注解 @PreAuthorize** 实现的，**可以判断具体的url是否有权限访问该接口**
+
+
+
+##### @PreAuthorize
+
+- **@PreAuthorize** 是 Spring Security 框架中提供的一个安全注解，用于实现基于注解的访问控制
+
+    它允许开发者在**方法级别**上声明特定的安全约束，以确保只有满足指定条件的用户才能调用该方法
+
+- 当 @PreAuthorize 注解被应用于某个方法时，Spring Security 在**该方法执行前**会先对当前认证的用户进行权限检查
+
+    如果检查通过，方法调用得以继续；否则，框架会抛出相应的权限异常（如 AccessDeniedException），阻止方法执行
+
+- 若依框架生成的Controller中都可以见到权限控制的代码，如下：
+
+    ```java
+    @PreAuthorize("@ss.hasPermi('system:user:list')")
+    @GetMapping("/list")
+    public TableDataInfo list(SysUser user) {
+    
+    }
+    ```
+
+    - **@PreAuthorize**  
+
+        Spring Security 框架的权限注解，在执行方法前执行
+
+        - 已经开启注解生效，在 SecurityConfig 类中添加了如下注解：
+
+            ```java
+            @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
+            ```
+
+    - **@ss.hasPermi('system:user:list')**
+
+        - **ss：** 
+
+            是一个被 spring 管理的 bean
+
+            位置：zzyl-framework模块中的`com.zzyl.framework.web.service.PermissionService`
+
+        - **hasPermi：**
+
+            PermissionService 类中的一个方法，判断是否拥有该权限
+
+        - **system:user:list：**
+
+            方法的参数
+
+
+
+#### 权限控制的流程
+
+##### 1. 登录与权限获取流程
+
+```mermaid
+graph TD
+    A[用户登录] --> B[查询用户]
+    B -->|返回token| C[返回token]
+    B --> D[查询对应的权限列表]
+    
+    %% 侧边注释节点
+    E["用户对应的权限列表<br/>nursing:project:query 查询护理项目的权限<br/>nursing:project:add 添加护理项目的权限<br/><span style='color:red'>*:*:* 管理员权限，可以访问任何资源</span>"]
+    D -.-> E
+    
+    D --> F[查询对应的路由列表]
+    
+    %% 底部注释节点
+    G["nursing/roomType/index<br/>nursing/floor/index<br/>nursing/project/index"]
+    F -.-> G
+    
+    %% 样式设置（尽量还原原图配色）
+    style A fill:#f2f7fd,stroke:#333,stroke-width:2px
+    style B fill:#f2f7fd,stroke:#333,stroke-width:2px
+    style C fill:#f2f7fd,stroke:#333,stroke-width:2px
+    style D fill:#fce4e4,stroke:#333,stroke-width:2px
+    style F fill:#f2f7fd,stroke:#333,stroke-width:2px
+    style E fill:none,stroke:none
+    style G fill:none,stroke:none
+```
+
+##### 2. 接口鉴权流程
+
+```mermaid
+graph TD
+    A["访问业务方法"] --> B["@PreAuthorize<br/>权限注解生效"]
+    B -->|"进入PermissionService.hasPermi(system:user:list)"| C["获取当前登录人<br/>且获取对应的权<br/>限标识列表"]
+    C --> D{"判断传入的参数<br/>是否在列表中"}
+    
+    D -->|"否"| E["权限不足"]
+    D -->|"是"| F["放行"]
+    
+    %% 样式设置（尽量还原原图配色）
+    style A fill:#f2f7fd,stroke:#333,stroke-width:2px
+    style B fill:#f2f7fd,stroke:#333,stroke-width:2px
+    style C fill:#f2f7fd,stroke:#333,stroke-width:2px
+    style D fill:#fcf3d9,stroke:#333,stroke-width:2px
+    style E fill:#d65a5a,stroke:#333,stroke-width:2px,color:#fff
+    style F fill:#f2f7fd,stroke:#333,stroke-width:2px
+```
+
+
+
+
+
+
+
+
+
+# 17. 三方接口
+
+### 接口文档
+
+在项目中对接任何三方接口，最重要的参考永远都是官方给提供的**接口文档**，包含接口的四要素**（请求路径、请求方式、入参、出参）**
+
+示例：
+
+微信官方给提供的这个接口，这个是用于微信登录的接口，链接如下：
+
+https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/user-login/code2Session.html
+
+比较关键的部分就是：
+
+- 功能描述，查阅是否符合咱们业务对接的需求
+- 调用方式，三方接口一般都是https居多，更加安全，包含了请求方式和请求地址
+- 请求参数，接口的入参，重点关注**必须要传的参数**
+- 返回参数，查看返回的数据结构和内容，是否符合自己的返回预期
+- 错误码，当接口调用失败的时候，可以根据错误码对应的描述修正代码解决问题
+
+
+
+
+
+### API客户端
+
+不同的接口调用的方式不太一样，不过，基本的思路都是基于**http请求**来调用
+
+但之前使用的http请求，都是**前端到后端**来发起请求
+
+如果从后端调用三方接口，一样也是用的 http 请求，不过变成了**后端到后端**的请求，需要借助工具才能发起请求
+
+##### HTTP客户端工具：
+
+- HttpClient    
+- OkHttp       
+- Spring提供的    
+- **糊涂工具包，使用说明地址：**https://doc.hutool.cn/pages/http/
+
+
+
+
+
+### 糊涂工具常见方法
+
+糊涂工具的官方文档：https://doc.hutool.cn/pages/HttpUtil/
+
+
+
+- 准备：在 zzyl-common 模块中添加单元测试依赖
+
+```XML
+<dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+
+
+
+在zzyl-common模块下创建测试类：com.zzyl.nursing.test.HttpTest
+
+- GET请求
+
+```Java
+package com.zzyl.nursing.test;
+
+import cn.hutool.http.HttpResponse;
+import cn.hutool.http.HttpUtil;
+import cn.hutool.http.Method;
+import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class HttpTest {
+
+    @Test
+    public void testGet() {
+        String result = HttpUtil.get("https://www.baidu.com");
+        System.out.println(result);
+    }
+
+    @Test
+    public void testGetByParam() {
+        // 构建查询参数
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("pageNum", 1);
+        paramMap.put("pageSize", 5);
+        // 分页查询护理项目
+        String result = HttpUtil.get("http://localhost:8080/nursing/project/list", paramMap);
+        System.out.println(result);
+    }
+
+    @Test
+    public void testCreateRequest() {
+        // 构建查询参数
+        Map<String,Object> paramMap = new HashMap<>();
+        paramMap.put("pageNum", 1);
+        paramMap.put("pageSize", 5);
+        // 分页查询护理项目
+        HttpResponse response = HttpUtil.createRequest(Method.GET, "http://localhost:8080/nursing/project/list")
+                .header("Authorization", "Bearer eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6ImUyNTgyNzdhLTMxNzAtNGFhNS05MmNhLWRiNjFiNDYyOGYxNCJ9.p8ieeQe4A6lozsxpzTL4Z3JNAS3UgBOVRZckDFnNvJQs8C2I5X5nZVxAQCaUv_0u9yUN-d0FKDCHwtCkMeIdBA")
+                .form(paramMap)
+                .execute();
+        if(response.isOk()){
+            System.out.println(response.body());
+        }
+    }
+}
+```
+
+- POST请求
+
+```Java
+@Test
+public void testPost() {
+    String url = "http://localhost:8080/nursing/project";
+    HashMap<String, Object> paramMap = new HashMap<>();
+    paramMap.put("name", "护理项目测试");
+    paramMap.put("orderNo", 1);
+    paramMap.put("unit", "次");
+    paramMap.put("price", 10.00);
+    paramMap.put("image", "https://yjy-slwl-oss.oss-cn-hangzhou.aliyuncs.com/ae7cf766-fb7b-49ff-a73c-c86c25f280e1.png");
+    paramMap.put("nursingRequirement", "无特殊要求");
+    paramMap.put("status", 1);
+    String result = HttpUtil.post(url, JSONUtil.toJsonStr(paramMap));
+    System.out.println(result);
+}
+
+@Test
+public void testCreatePost() {
+    String url = "http://localhost:8080/nursing/project";
+    HashMap<String, Object> paramMap = new HashMap<>();
+    paramMap.put("name", "护理项目测试");
+    paramMap.put("orderNo", 1);
+    paramMap.put("unit", "次");
+    paramMap.put("price", 10.00);
+    paramMap.put("image", "https://yjy-slwl-oss.oss-cn-hangzhou.aliyuncs.com/ae7cf766-fb7b-49ff-a73c-c86c25f280e1.png");
+    paramMap.put("nursingRequirement", "无特殊要求");
+    paramMap.put("status", 1);
+
+    // 发送请求
+    HttpResponse response = HttpUtil.createPost(url).body(JSONUtil.toJsonStr(paramMap))
+            .header("Authorization", "Bearer eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6ImUyNTgyNzdhLTMxNzAtNGFhNS05MmNhLWRiNjFiNDYyOGYxNCJ9.p8ieeQe4A6lozsxpzTL4Z3JNAS3UgBOVRZckDFnNvJQs8C2I5X5nZVxAQCaUv_0u9yUN-d0FKDCHwtCkMeIdBA")
+            .execute();
+    if(response.isOk()) {
+        System.out.println(response.body());
+    }
+
+}
+```
+
+**HttpUtil.get** 和 **HttpUtil.post** 这两个方法调用相对简单，如果请求参数中没有额外的条件设置，就可以使用这两个方法
+
+但是，有的时候三方接口调用需要使用到header或者是文件上传，就不能使用这两个方法了
+
+此时咱们可以使用 **HttpUtil.createRequest** 方法来去构建更多的条件参数
