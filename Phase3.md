@@ -759,6 +759,8 @@ public PageResult<Emp> page(Integer page, Integer pageSize) {
 
 PageHelper 是 MyBatis 的分页插件，基于 **MyBatis 拦截器 (Interceptor)** 实现
 
+##### 依赖
+
 ```xml
 <!-- 分页插件PageHelper -->
 <dependency>
@@ -768,44 +770,97 @@ PageHelper 是 MyBatis 的分页插件，基于 **MyBatis 拦截器 (Interceptor
 </dependency>
 ```
 
-##### mapper 层
+
+
+#####  Page 分页对象
+
+| 参数           | 含义                | 默认值 | 使用说明                                                     |
+| -------------- | ------------------- | ------ | ------------------------------------------------------------ |
+| **pageNum**    | 页码                | -      | **必传**，从 1 开始                                          |
+| **pageSize**   | 每页条数            | -      | **必传**，每页展示多少条                                     |
+| **count**      | 是否执行 count 查询 | true   | true：额外执行 count SQL 查询总记录数；false：不查总数，无 total |
+| **reasonable** | 分页合理化          | null   | true：页码≤1 自动修正为第 1 页；页码 > 总页数自动修正为最后一页；false：越界返回空数据 |
+| **orderBy**    | 排序语句            | null   | 示例：`create_time desc, id asc`；自带 SQL 注入校验，不要直接接收前端原始参数 |
+
+
+
+##### PageMethod 基础分页方法
 
 ```java
-//查询员工数据
-@Select("select e.* from emp e ... ")
-public List<Emp> list();
-```
+public abstract class PageMethod {
+    // 为每个线程维护一份独立的 Page 对象副本，线程之间互不干扰
+    protected static final ThreadLocal<Page> LOCAL_PAGE = new ThreadLocal<Page>();
+    protected static boolean DEFAULT_COUNT = true;
 
-**拦截 SQL 重写 SQL：**
+    // 把当前线程的分页参数（Page 对象）存放到 ThreadLocal 中
+    protected static void setLocalPage(Page page) {
+        LOCAL_PAGE.set(page);
+    }
 
-1. 求总条数 **total** ：
-
-​	PageHelper 会解析原始 SQL，包装成 **select count(*) from (原始sql)**
-
-2. 重写业务 SQL，拼接分页方言
-
-    追加 limit ，两个？分别对应 **offset** 、**pageSize**，其中 **offset = (page - 1) * pageSize**
-
-注意：重写 SQL 时会直接在原语句后拼接 limit ，所以**原语句结尾不能有分号**
-
-##### service 层
-
-```java
-public PageResult<Emp> page(Integer page, Integer pageSize) {
-    //1. 设置分页参数
-    PageHelper.startPage(page, pageSize);
-    //2. 调用Mapper接口方法
-    List<Emp> empList = empMapper.list();
-    //3. 解析并封装结果
-    return new PageResult(...);
+    // 移除本地变量
+    public static void clearPage() {
+        LOCAL_PAGE.remove();
+    }
+    
+    // 还有一些获取分页参数的方法
+    
+    // public static <E> Page<E> startPage(...)
+    
+    // public static <E> Page<E> offsetPage(...)
 }
 ```
 
-**ThreadLocal 传递分页参数：**
+**PageHelper** 类继承了 **PageMethod** 类，是分页插件的核心类
 
-**PageHelper.startPage(pageNum, pageSize)** 是静态方法，方法内部使用 **ThreadLocal** 把分页参数存到当前线程，对紧随其后的**第一条 MyBatis 查询**自动分页
 
-注意：但只对紧跟在后面的**第一个 select** 生效，中间不能夹杂其他查询；线程复用会有参数污染
+
+##### mapper 层
+
+使用了 pagehelper 的分页查询在 sql 语句中没有 limit 字段
+
+```xml
+<select id="selectRoomTypeList">
+    select id, name, bed_count, price, ...
+    from room_type
+    <where>
+        ...
+    </where>
+</select>
+```
+
+分页完全由 **MyBatis 拦截器**在运行时处理
+
+Mapper 调用最终进入 MyBatis：
+
+```java
+Executor.query(...)
+```
+
+
+
+##### PageInterceptor 分页拦截器
+
+当拦截器执行时，它会检查 ThreadLocal 里有没有分页参数
+
+- 如果有，就对当前这条 SQL 进行改写（加上 **LIMIT** 等）
+
+- 如果没有，或者参数已经被消费过了（**PageHelper** 会在查询结束后清理 `ThreadLocal`），它就不会进行分页处理，直接放行
+
+    **所以 pagehelper 只对紧随其后的第一条 MyBatis 查询自动分页**
+
+```java
+@Intercepts({
+    @Signature(
+        type = Executor.class,
+        method = "query",
+        args = {...}
+    )
+})
+```
+
+
+
+
 
 
 
@@ -1577,8 +1632,6 @@ public Object recordTime(ProceedingJoinPoint joinPoint) throws Throwable {
 
 可以加上逻辑与或
 
- ├── bin                        // 执行脚本├── public                     // 公共文件│   ├── favicon.ico            // favicon图标├── src                        // 源代码│   ├── api                    // 所有请求,后台的api接口，开发时经常操作的目录│   ├── assets                 // 主题 字体等静态资源│   ├── components             // 全局公用组件│   ├── directive              // 全局指令│   ├── layout                 // 布局│   ├── plugins                // 通用方法│   ├── router                 // 路由│   ├── store                  // 全局 store管理│   ├── utils                  // 全局公用方法│   ├── views                  // view，存储vue组件，开发时经常操作的目录│   ├── App.vue                // 根组件│   ├── main.js                // 入口 加载组件 初始化等│   ├── permission.js          // 权限管理│   └── settings.js            // 系统配置├── vite                       // 前端构建工具├── .env.development           // 开发环境配置├── .env.production            // 生产环境配置├── .env.staging               // 测试环境配置├── .gitignore                 // git 忽略项├── LICENSE                    // 许可证├── package-lock.json          // 锁定项目依赖的具体版本号├── package.json               // 配置项目的信息、名称、版本号、描述信息等├── pnpm-lock.yaml             // 锁定项目依赖的具体版本号└── vite.config.js             // 用于配置 Vue.js 项目的全局选项，可修改后台访问接口的路径Bash
-
 ##### 1. execution(……)：
 
 主要根据方法的返回值、包名、类名、方法名、方法参数等信息来匹配，语法为：
@@ -1661,23 +1714,11 @@ execution(访问修饰符?  返回值  包名.类名.?方法名(方法参数) th
 
 
 
+### 2. ThreadLocal\<T> 
 
-### 2. ThreadLocal 类
+**ThreadLocal\<T>** 让**同一个变量**在每个线程中都拥有一份**独立的副本**，从而避免多线程环境下的共享冲突，实现线程安全
 
-**ThreadLocalMap** 是 **ThreadLocal** 的 静态内部类，是一个定制化的哈希表容器，**ThreadLocal 对象**作为 **key**，**业务数据**作为 **value**
-
-```java
-public class Thread implements Runnable {
-
-	/* 属于本线程的所有ThreadLocal存储值。该Map由ThreadLocal类负责维护。 */
-    ThreadLocal.ThreadLocalMap threadLocals = null;
-```
-
-**特性：线程隔离** 
-
-​	   ThreadLocal 为**每一个线程分配独立存储空间**。 不同线程之间的数据互相隔离，互不干扰
-
-​	   Thread‑1、Thread‑2、Thread‑3…… 每个线程各自持有自己的 **ThreadLocalMap**，线程与线程的数据互不影响
+ThreadLocal 通过将数据与当前线程绑定，提供了一种“隐式传参”机制，优雅地解决了跨层级调用中“**层层传参**”带来的代码臃肿与侵入性问题，实现了无侵入的线程内**上下文共享**
 
 ##### 常用方法：
 
@@ -1700,6 +1741,23 @@ public class Thread implements Runnable {
     ```
 
 
+
+
+
+##### **ThreadLocalMap** 
+
+**ThreadLocalMap** 是 **ThreadLocal** 的 静态内部类，是一个定制化的哈希表容器，**ThreadLocal 对象**作为 **key**，**业务数据**作为 **value**
+
+一个线程对象中存储一个 ThreadLocalMap，用于存储本线程所有 ThreadLocal 对象对应的值
+
+```java
+public class Thread implements Runnable {
+
+	/* 属于本线程的所有 ThreadLocal 存储值。该 Map 由 ThreadLocal类 负责维护。 */
+    ThreadLocal.ThreadLocalMap threadLocals = null;
+```
+
+Thread‑1、Thread‑2、Thread‑3…… 每个线程各自持有自己的 **ThreadLocalMap**，线程与线程的数据互不影响
 
 
 

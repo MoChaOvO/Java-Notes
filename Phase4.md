@@ -1045,7 +1045,7 @@ git reset
 
 当暂存区中有文件时，可以使用它将会清空暂存区
 
-现在想要把abc.txt文件的内容恢复到某次提交的版本内容，可以执行以下命令：
+现在想要把仓库中的内容恢复到某次提交的版本内容，可以执行以下命令：
 
 ```bash
 git reset --hard xxxx
@@ -3947,7 +3947,7 @@ flowchart LR
 ```
 
 - 请求来了以后，如果是 `doc.html` 或 `login`，是一个静态资源，可以直接放行，在 **SecurityConfig** 可以配置放行接口
-- 请求来了以后，如果是`/nursing/elder/save`，在 SecurityConfig 没有配置放行，需要校验当前请求携带的token是否有效，**如果token无效，则是认证失败**，需要重新认证（跳转到登录页）
+- 请求来了以后，如果是 `/nursing/elder/save`，在 SecurityConfig 没有配置放行，需要校验当前请求携带的token是否有效，**如果token无效，则是认证失败**，需要重新认证（跳转到登录页）
 - 请求来了以后，如果是`/nursing/elder/save`，在 SecurityConfig 没有配置放行，token也有效，则**判断当前登录人是否拥有该权限(认证成功后，可以获取用户的权限列表)**
     - 如果有权限，则放行
     - 如果没权限，则提醒权限不足
