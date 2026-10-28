@@ -1731,13 +1731,11 @@ public @interface SpringBootApplication {
 
     **@Import(AutoConfigurationImportSelector.class)：**导入**ImportSelector 接口实现类**
 
-    AutoConfigurationImportSelector 执行接口方法：**String[] selectImports(...)**，会读取 jar 包中的资源文件，返回一批配置类的全类名数组
+    AutoConfigurationImportSelector 执行接口方法：**String[ ] selectImports(...)**，会读取 jar 包中的资源文件，返回一批配置类的全类名数组
 
     **spring‑boot‑autoconfigure‑xxx.jar → META‑spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports**
 
     文件里面存放大量自动配置类的全限定类名，封装到 String 数组中由 @Import 导入 IOC 容器。文件中定义的配置类非常多，而且每个配置类中又可以定义很多的bean，在声明bean对象时，上面有加一个以 @Conditional 开头的注解，这种注解的作用就是按照条件进行装配，只有满足条件之后，才会将bean注册到Spring的IOC容器中
-
-
 
 
 
@@ -2055,26 +2053,20 @@ public ResponseEntity<String> response() {
 - **低耦合：** 模块与模块之间尽量减少依赖，不要写死强关联，最好能解耦。修改 A 模块，尽量不要影响到 B 模块
 
     
+  
+  
 
-**控制反转**： Inversion Of Control，简称 **IOC**。对象的创建控制权由程序自身转移到外部（容器），这种思想称为控制反转
+#### 2. IOC 
 
-**依赖注入**： Dependency Injection，简称 **DI**。容器为应用程序提供运行时，所依赖的资源，称之为依赖注入
+##### **Inversion of Control  控制反转**
 
-**Bean 对象**： IOC 容器中创建、管理的对象，称之为 **Bean**
-
-
-
-
-
-##### IOC 详解
-
-**Inversion of Control  控制反转**
+对象的创建控制权由程序自身转移到外部（容器），这种思想称为控制反转
 
 把对象的创建、管理的权力，交给 Spring 容器，而不是程序员自己 new 对象
 
 这样，业务代码只依赖某个接口，如果该接口下有新的实现类，则可实现这个接口并声明为该接口的 bean，不用修改业务代码
 
-**IOC 带来的好处：**
+##### **IOC 带来的好处：**
 
 1. 解耦：类和类之间不再硬编码 new，修改代码改动小
 2. 对象统一交给 Spring 管理，方便 AOP、事务处理
@@ -2095,13 +2087,15 @@ public ResponseEntity<String> response() {
 
 
 
-##### DI 详解
+#### 3. DI 
 
-**Dependency Injection** **属性注入**
+##### **Dependency Injection** **属性注入**
+
+容器为应用程序提供运行时，所依赖的资源，称之为依赖注入
 
 基于 **@Autowired** 进行依赖注入的常见方式有如下三种：
 
-**① 属性注入（快速开发）**
+##### **① 属性注入（快速开发）**
 
 ```java
 @RestController
@@ -2118,7 +2112,7 @@ public class UserController {
 
     private本意是私有成员，只能在类内部访问，外部不能直接赋值。但 @Autowired 是 Spring 利用 Java 反射机制，直接绕过类的 set 方法、构造方法，强行给private私有属性赋值
 
-**② 构造函数注入（官方推荐）**
+##### **② 构造函数注入（官方推荐）**
 
 ```java
 @RestController
@@ -2136,7 +2130,7 @@ public class UserController {
 - 优点：能清晰地看到类的依赖关系、提高了代码的安全性
 - 缺点：代码繁琐、如果构造参数过多，可能会导致构造函数臃肿
 
-**③ setter 注入（最少使用）**
+##### **③ setter 注入（最少使用）**
 
 ```java
 @RestController
@@ -2154,7 +2148,13 @@ public class UserController {
 
 
 
-**若有多个相同类型的 bean**
+#### 4. Bean ： 
+
+**Bean** 就是由 Spring IoC 容器实例化、组装和管理的对象
+
+它本质上是你应用中的普通 Java 对象，但之所以叫“Bean”，是因为它的创建和依赖关系不再由你自己 new 出来控制，而是交给了 Spring 容器接管
+
+##### **若有多个相同类型的 bean**
 
 如注入的类型是接口，但这个接口下有多个实现类，即有多个相同类型的 bean
 
@@ -3301,12 +3301,6 @@ hobby:
 
 ##### \<foreach> ：
 
-1. **collection**: 集合名称
-2. **item**: 集合遍历出来的元素 / 项
-3. **separator**: 每一次遍历使用的分隔符
-4. **open**: 遍历开始前拼接的片段
-5. **close**: 遍历结束后拼接的片段
-
 ```java
 public void insertBatch(List<EmpExpr> exprList);
 ```
@@ -3319,6 +3313,12 @@ public void insertBatch(List<EmpExpr> exprList);
     </foreach>
 </insert>
 ```
+
+1. **collection**: 集合名称
+2. **item**: 集合遍历出来的元素 / 项
+3. **separator**: 每一次遍历使用的分隔符
+4. **open**: 遍历开始前拼接的片段
+5. **close**: 遍历结束后拼接的片段
 
 
 

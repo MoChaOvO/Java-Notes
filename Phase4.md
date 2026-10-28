@@ -265,27 +265,53 @@ public class TliasMangementSystemApplication {
 
 为了简化单表CRUD，Mybatis-Plus提供了一个基础的 **BaseMapper** 接口，其中已经实现了单表的CRUD：
 
-| 功能分类 | 方法签名（：后为返回值类型）                                 | 说明                              |
-| :------- | :----------------------------------------------------------- | :-------------------------------- |
-| **增**   | `insert(T): int`                                             | 插入一条记录                      |
-| **删**   | `deleteById(Serializable): int`                              | 根据主键 ID 删除                  |
-| **删**   | `deleteById(T): int`                                         | 根据实体对象（含主键）删除        |
-| **删**   | `deleteByMap(Map<String, Object>): int`                      | 根据 Map 条件删除                 |
-| **删**   | `delete(Wrapper<T>): int`                                    | 根据条件构造器 Wrapper 删除       |
-| **删**   | `deleteBatchIds(Collection<?>): int`                         | 根据主键 ID 集合批量删除          |
-| **改**   | `updateById(T): int`                                         | 根据主键 ID 更新记录              |
-| **改**   | `update(T, Wrapper<T>): int`                                 | 根据条件构造器 Wrapper 更新记录   |
-| **查**   | `selectById(Serializable): T`                                | 根据主键 ID 查询单条记录          |
-| **查**   | `selectBatchIds(Collection<? extends Serializable>): List<T>` | 根据主键 ID 集合批量查询          |
-| **查**   | `selectByMap(Map<String, Object>): List<T>`                  | 根据 Map 条件查询列表             |
-| **查**   | `selectOne(Wrapper<T>): T`                                   | 根据条件查询单条记录              |
-| **查**   | `exists(Wrapper<T>): boolean`                                | 判断满足条件的记录是否存在        |
-| **查**   | `selectCount(Wrapper<T>): Long`                              | 查询满足条件的总记录数            |
-| **查**   | `selectList(Wrapper<T>): List<T>`                            | 根据条件查询列表                  |
-| **查**   | `selectMaps(Wrapper<T>): List<Map<String, Object>>`          | 根据条件查询，返回 Map 列表       |
-| **查**   | `selectObjs(Wrapper<T>): List<Object>`                       | 根据条件查询，只返回第一列字段值  |
-| **分页** | `selectPage(P, Wrapper<T>): P`                               | 分页查询，返回分页对象            |
-| **分页** | `selectMapsPage(P, Wrapper<T>): P`                           | 分页查询，返回 Map 类型的分页对象 |
+##### 增
+
+| 方法签名      | 返回值类型 | 说明         |
+| :------------ | :--------- | :----------- |
+| **insert(T)** | int        | 插入一条记录 |
+
+##### 删
+
+| 方法签名                             | 返回值类型 | 说明                        |
+| :----------------------------------- | :--------- | :-------------------------- |
+| **deleteById(Serializable)**         | int        | 根据主键 ID 删除            |
+| **deleteById(T)**                    | int        | 根据实体对象（含主键）删除  |
+| **deleteByMap(Map<String, Object>)** | int        | 根据 Map 条件删除           |
+| **delete(Wrapper\<T>)**              | int        | 根据条件构造器 Wrapper 删除 |
+| **deleteBatchIds(Collection<?>)**    | int        | 根据主键 ID 集合批量删除    |
+
+##### 改
+
+| 方法签名                   | 返回值类型 | 说明                            |
+| :------------------------- | :--------- | :------------------------------ |
+| **updateById(T)**          | int        | 根据主键 ID 更新记录            |
+| **update(T, Wrapper\<T>)** | int        | 根据条件构造器 Wrapper 更新记录 |
+
+##### 查
+
+| 方法签名                                               | 返回值类型                | 说明                             |
+| :----------------------------------------------------- | :------------------------ | :------------------------------- |
+| **selectById(Serializable)**                           | T                         | 根据主键 ID 查询单条记录         |
+| **selectBatchIds(Collection<? extends Serializable>)** | List\<T>                  | 根据主键 ID 集合批量查询         |
+| **selectByMap(Map<String, Object>)**                   | List\<T>                  | 根据 Map 条件查询列表            |
+| **selectOne(Wrapper\<T>)**                             | T                         | 根据条件查询单条记录             |
+| **exists(Wrapper\<T>)**                                | boolean                   | 判断满足条件的记录是否存在       |
+| **selectCount(Wrapper\<T>)**                           | Long                      | 查询满足条件的总记录数           |
+| **selectList(Wrapper\<T>)**                            | List\<T>                  | 根据条件查询列表                 |
+| **selectMaps(Wrapper\<T>)**                            | List<Map<String, Object>> | 根据条件查询，返回 Map 列表      |
+| **selectObjs(Wrapper\<T>)**                            | List\<Object>             | 根据条件查询，只返回第一列字段值 |
+
+##### 分页
+
+| 方法签名                           | 返回值类型 | 说明                              |
+| :--------------------------------- | :--------- | :-------------------------------- |
+| **selectPage(P, Wrapper\<T>)**     | P          | 分页查询，返回分页对象            |
+| **selectMapsPage(P, Wrapper\<T>)** | P          | 分页查询，返回 Map 类型的分页对象 |
+
+
+
+##### 实现 BaseMapper
 
 因此我们自定义的 Mapper 只要**实现这个 BaseMapper**，就无需自己实现单表CRUD了
 
@@ -299,7 +325,7 @@ public interface DeptMapper extends BaseMapper<Dept> {
 
 Mybatis-Plus 就是根据 pojo 实体的信息通过**反射**来推断出表的信息，从而生成SQL的
 
-规则如下：
+**规则如下：**
 
 - Mybatis-Plus 会把 pojo **实体**的类名驼峰转下划线**作为表名**
 - Mybatis-Plus 会把名为 **id** 的字段**作为主键**
@@ -315,7 +341,7 @@ Mybatis-Plus 就是根据 pojo 实体的信息通过**反射**来推断出表的
 
 ##### **@TableName**
 
-- 描述：表名注解，标识实体类对应的表
+- 描述：表名注解，**标识实体类对应的表**
 - 使用位置：实体类
 
 示例：
@@ -378,7 +404,7 @@ public class User {
 
 ##### **@TableId**
 
-- 描述：主键注解，标识实体类中的主键字段和主键生成类型
+- 描述：主键注解，标识实体类中的**主键字段**和**主键生成类型**
 
 - 使用位置：实体类的主键字段
 
@@ -1523,7 +1549,7 @@ com.ruoyi
 
 # 4. Swagger
 
-Swagger 是一个规范和完整的框架，用于生成、描述、调用和可视化 RESTful 风格的 Web 服务
+**Swagger** 是一个规范和完整的框架，用于生成、描述、调用和可视化 RESTful 风格的 Web 服务
 
 官网：https://swagger.io/
 
@@ -1695,7 +1721,7 @@ public class SwaggerConfig
 ##### 访问地址
 
 1. 方式一：系统内部访问
-2. 方式二：服务地址+/Swagger-ui/index.html  --- >  http://localhost:8080/swagger-ui/index.html
+2. 方式二：服务地址+/Swagger-ui/index.html  →  http://localhost:8080/swagger-ui/index.html
 
 
 
@@ -1718,66 +1744,11 @@ public class SwaggerConfig
 | **@ApiModel**         | 用在**实体类**上，描述用来接收参数或者响应结果的**实体类的含义** |
 | **@ApiModelProperty** | 用在**实体类的属性**上，用来描述实体类中**属性的含义**       |
 
-一般的形参，如：id，status 等这些，在 controller 的方法可以使用 **@ApiParam** 或者 **@ApiImplicitParam** 注解进行描述
+- 一般的形参，如：id，status 等这些，在 controller 的方法可以使用 **@ApiParam** 或者 **@ApiImplicitParam** 注解进行描述
 
-如果接口是post、put请求，可能接收的是一个对象作为请求体参数，上面两个注解并不能很好的描述对象中的每一个属性，这个时候需要使用新的注解：**@ApiModel** 和 **@ApiModelProperty**
+- 如果接口是 **post、put 请求**，可能接收的是一个对象作为请求体参数，上面两个注解并不能很好的描述对象中的每一个属性
 
-
-
-### 响应体参数
-
-#### 存在问题
-
-在使用 **Swagger / Knife4j / YApi** 等接口文档工具时，**“响应参数”**那一栏是空白的，无法展开看到具体的字段（如 id、名称、价格等）及说明
-
-导致这个问题的根本原因在于： **Controller 方法返回类型过于 “泛化”**（通常是 `AjaxResult` 或 `R`），导致接口文档工具“猜”不出里面具体装的是什么数据
-
-具体原因可以拆解为以下几点：
-
-##### 1. 返回类型是 `AjaxResult` (或 `R`、`Result` 等统一响应体)
-
-在若依（RuoYi）等框架中，Controller 的返回通常长这样：
-
-```java
-@GetMapping("/{id}")
-public AjaxResult getInfo(@PathVariable Long id) {
-    return success(nursingProjectService.getById(id));
-}
-```
-
-这里的返回类型是 `AjaxResult`。在 Java 编译后，`AjaxResult` 里面的 `data` 字段类型通常被定义为 `Object`。接口文档工具（如 Swagger）在解析 `AjaxResult` 时，只能看到一个 `data` 字段，但不知道 `data` 里面到底是一个 `String`、一个 `List` 还是一个 `NursingProject` 对象，所以只能显示为空白或简单的 `Object`
-
-##### 2. 缺少返回值的泛型说明
-
-虽然你在实体类 `NursingProject` 上使用了 `@ApiModel` 和 `@ApiModelProperty`，但框架的返回值包装器（如 `AjaxResult`）并没有使用泛型（例如 `AjaxResult<NursingProject>`，而若依默认的 `AjaxResult` 是直接继承 `HashMap` 的，不支持泛型），这就导致类型信息丢失
-
-
-
-#### 解决方法：
-
-需要在 controller 类的方法上指定返回值类型，具体有以下几种做法：
-
-##### **方法一：使用 Swagger 的 `@ApiOperation` 注解（最常用）**
-
-在 `@ApiOperation` 中明确指定 `response` 属性：
-
-```java
-@ApiOperation(value = "获取护理项目详细信息", response = NursingProject.class)
-@GetMapping("/{id}")
-public AjaxResult getInfo(@PathVariable Long id) {
-    // ...
-}
-```
-
-注意：如果返回的是列表，不能用 `response`，要用下面方法二
-
-##### **方法二：返回数据列表时（分页或不分页）**
-
-如果方法返回的是一个列表，直接在注解里指定 `NursingProject.class` 是不够的，文档会以为返回的是单个对象。需要指定为数组或泛型形式：
-
-- **若依的 `TableDataInfo`:** 若依分页返回的是 `TableDataInfo`，由于它里面包含 `List<?> rows`，通常也需要通过注解显式告诉文档 `rows` 里的元素是 `NursingProject`
-
-# 待补1
+    这个时候需要使用新的注解：**@ApiModel** 和 **@ApiModelProperty**
 
 
 
@@ -1795,8 +1766,6 @@ Velocity 是一个基于 Java 的模板引擎，它可以通过特定的语法�
 - 源代码生成  : Velocity 可以基于模板生成 Java 源代码
 - 自动电子邮件 : 网站注册， 认证等的电子邮件模板
 - 网页静态化  : 基于 velocity 模板生成静态网页
-
-在
 
 
 
@@ -2102,7 +2071,9 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
 
 **后端 ➡️ 前端**（专门给页面展示用）
 
-在实际开发中，我们通常把作为方法返回值的类加上 `VO` 后缀（如 `OrderVO`）。这样做的主要目的是明确该方法返回的是一个**值对象**，而不是实体（Entity）或数据访问对象（DAO）等。具体好处包括：
+在实际开发中，我们通常把作为方法返回值的类加上 `VO` 后缀（如 `OrderVO`）。这样做的主要目的是明确该方法返回的是一个**值对象**，而不是实体（Entity）或数据访问对象（DAO）等
+
+##### 具体好处包括：
 
 1. **提高代码可读性**：其他开发者在阅读代码时，看到后缀就能懂这个方法返回的是什么类型的对象。
 2. **明确对象用途**：通过命名约定，清晰地表明这些对象是专门用于封装数据、在应用程序不同部分之间传输的。
@@ -2131,7 +2102,9 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
 
 **前端 → 后端**（专门接收页面数据用）
 
-在实际开发中，我们通常把作为方法入参（接收请求参数）的类加上 `DTO` 后缀（如 `UserAddDTO`、`OrderQueryDTO`）。这样做的主要目的是明确该方法接收的是一个**数据传输对象**，而不是直接使用数据库实体（Entity）。具体好处包括：
+在实际开发中，我们通常把作为方法入参（接收请求参数）的类加上 `DTO` 后缀（如 `UserAddDTO`、`OrderQueryDTO`）。这样做的主要目的是明确该方法接收的是一个**数据传输对象**，而不是直接使用数据库实体（Entity）
+
+**具体好处包括：**
 
 1. **提高代码可读性**：其他开发者在阅读代码时，看到后缀就能懂这个类是用来接收外部（通常是前端）参数的，而不是数据库映射对象。
 2. **明确对象用途**：通过命名约定，清晰地表明这些对象专门用于系统边界（如 Controller 层）的数据接收与传递。
@@ -2852,7 +2825,7 @@ Spring Data Redis中提供了一个高度封装的类：**RedisTemplate<K,V>**
 | **ZSetOperations**   | `redisTemplate.opsForZSet()`  | **zset** 类型数据操作   |
 | **ListOperations**   | `redisTemplate.opsForList()`  | **list** 类型的数据操作 |
 
-RedisTemplate 对象调用上述方法后会返回对应接口的实现类，此时就可以用链式编程的方式对各自对应的类型进行操作
+RedisTemplate 对象调用上述方法后会**返回对应接口的实现类**，此时就可以用链式编程的方式对各自对应的类型进行操作
 
 
 
@@ -2947,9 +2920,7 @@ public class RedisConfig extends CachingConfigurerSupport
 
 
 
-#### 操作
-
-##### 操作常见类型数据
+#### ⭐操作
 
 检测 Java 集成 redis 环境是否准备完成
 
@@ -2976,9 +2947,16 @@ public class RedisTest {
 
 
 
-##### 操作字符串数据类型
+##### 字符串
 
 基于刚才的命令，字符串类型常见命令有：**set  get  setex setnx**
+
+| **方法名**      | **参数**                                                     | **作用**                                                     | **返回值类型** |
+| :-------------- | :----------------------------------------------------------- | :----------------------------------------------------------- | :------------- |
+| **set**         | key（键名）, value（值）                                     | **存入数据** 将指定的值存入 Redis 中（如果 key 存在则覆盖）。 | void           |
+| **get**         | key（键名）                                                  | **获取数据** 根据指定的 key 获取对应的值。                   | V              |
+| **set**         | key（键名）, value（值）, timeout（过期时间）, unit（时间单位） | **存入带过期时间的数据** 将指定的值存入 Redis，并设置该 key 的存活时间。 | void           |
+| **setIfAbsent** | key（键名）, value（值）, timeout（过期时间）, unit（时间单位） | **不存在时存入（分布式锁）** 当指定的 key 不存在时，才存入值并设置过期时间；若 key 已存在，则不覆盖并返回 false。 | Boolean        |
 
 ```Java
 /**
@@ -3001,9 +2979,17 @@ public void testString() {
 
 
 
-##### 操作哈希类型数据
+##### 哈希
 
 基于刚才的命令，哈希类型常见命令有：**hset  hget hkeys hvals hdel**  
+
+| **方法名** | **参数**                                            | **作用**                                                     | **返回值类型** |
+| :--------- | :-------------------------------------------------- | :----------------------------------------------------------- | :------------- |
+| **put**    | key（大 key）, hashKey（小 key）, value（值）       | **存入数据** 向指定的哈希表中存入一个小 key 及其对应的值。   | void           |
+| **get**    | key（大 key）, hashKey（小 key）                    | **获取指定值** 根据大 key 和小 key 获取对应的值。            | V              |
+| **keys**   | key（大 key）                                       | **获取所有小 key** 获取指定哈希表中包含的所有小 key。        | Set\<HK>       |
+| **values** | key（大 key）                                       | **获取所有值** 获取指定哈希表中包含的所有值。                | List\<HV>      |
+| **delete** | key（大 key）, hashKeys（要删除的小 key，可变参数） | **删除指定键值对** 从哈希表中删除一个或多个指定的小 key 及其对应的值。 | Long           |
 
 ```Java
 @Test
@@ -3029,9 +3015,17 @@ public void testHash() {
 
 
 
-##### 操作列表类型数据
+##### 列表
 
 基于刚才的命令，列表类型常见命令有：**lpush lrange rpop lpop llen**
+
+| **方法名**      | **参数**                                        | **作用**                                                     | **返回值类型** |
+| :-------------- | :---------------------------------------------- | :----------------------------------------------------------- | :------------- |
+| **leftPushAll** | key（键名）, values（插入的值，可变参数）       | **批量从左侧插入** 将一个或多个值依次插入到列表头部（左侧）。 | Long           |
+| **leftPush**    | key（键名）, value（插入的值）                  | **单值从左侧插入** 将一个值插入到列表头部（左侧）。          | Long           |
+| **range**       | key（键名）, start（起始索引）, end（结束索引） | **获取列表数据** 获取指定索引范围内的列表元素（0 到 -1 表示获取全部）。 | List\<V>       |
+| **leftPop**     | key（键名）                                     | **从左侧弹出** 移除并返回列表的头部（最左侧）元素。          | V              |
+| **size**        | key（键名）                                     | **获取列表长度** 返回列表中所包含的元素数量。                | Long           |
 
 ```Java
 /**
@@ -3054,9 +3048,17 @@ public void testList() {
 
 
 
-##### 操作集合类型数据
+##### 集合
 
 基于刚才的命令，集合类型常见命令有：**sadd smembers scard sinter sunion**
+
+| **方法名**    | **参数**                                  | **作用**                                                | **返回值类型** |
+| :------------ | :---------------------------------------- | :------------------------------------------------------ | :------------- |
+| **add**       | key（键名）, values（成员，可变参数）     | **添加数据** 向指定的集合中添加一个或多个成员。         | Long           |
+| **members**   | key（键名）                               | **获取集合中的所有成员** 返回指定集合中包含的所有元素。 | Set\<V>        |
+| **size**      | key（键名）                               | **获取集合大小** 返回指定集合中元素的数量。             | Long           |
+| **intersect** | key（键名）, otherKey（另一个集合的键名） | **求交集** 获取指定两个集合中共有的成员。               | Set\<V>        |
+| **union**     | key（键名）, otherKey（另一个集合的键名） | **求并集** 获取指定两个集合中所有的成员（自动去重）。   | Set\<V>        |
 
 ```Java
 /**
@@ -3086,9 +3088,16 @@ public void testSet() {
 
 
 
-##### 操作有序集合类型数据
+##### 有序集合
 
 基于刚才的命令，有序集合类型常见命令有：**zadd zrange zincrby zrem** 
+
+| **方法名**         | **参数**                                        | **作用**                                                     | **返回值类型** |
+| :----------------- | :---------------------------------------------- | :----------------------------------------------------------- | :------------- |
+| **add**            | key（键名）, value（成员）, score（分数）       | **添加数据** 向指定的有序集合中添加一个成员，并设置其对应的分数。 | Boolean        |
+| **range**          | key（键名）, start（起始索引）, end（结束索引） | **获取集合中的成员** 按照分数从小到大的顺序，获取指定索引范围内的成员（0 到 -1 表示获取全部）。 | Set\<V>        |
+| **incrementScore** | key（键名）, value（成员）, delta（增加的分数） | **增加成员的分数** 为有序集合中指定的成员增加指定的分数值，并返回更新后的分数。 | Double         |
+| **remove**         | key（键名）, values（要删除的成员，可变参数）   | **删除成员** 从指定的有序集合中移除一个或多个成员。          | Long           |
 
 ```Java
 /**
@@ -3115,9 +3124,16 @@ public void testZset() {
 
 
 
-##### 通用命令操作
+##### 通用命令
 
 基于刚才的命令，字符串类型常见命令有：**keys exists type del**
+
+| **方法名** | **参数**                  | **作用**                                                     | **返回值类型** |
+| :--------- | :------------------------ | :----------------------------------------------------------- | :------------- |
+| **keys**   | pattern（匹配模式，如 *） | **获取所有匹配的 key** 根据给定的模式查找符合条件的键。      | Set\<K>        |
+| **hasKey** | key（要检查的键名）       | **判断 key 是否存在** 检查指定的 key 在 Redis 中是否已存在。 | Boolean        |
+| **type**   | key（要查询的键名）       | **获取 key 的类型** 返回该 key 所存储的 value 的数据类型（如 String、List、Set、ZSet、Hash 等）。 | DataType       |
+| **delete** | key（要删除的键名）       | **删除 key** 从 Redis 中移除指定的 key 及其对应的 value。    | Boolean        |
 
 ```Java
 /**

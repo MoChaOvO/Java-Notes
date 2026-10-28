@@ -88,15 +88,27 @@ server {
 
 ### 4.SpringMVC
 
-SpringMVC 是 Spring 框架里面做 Web 开发（写后端接口）的模块，专门用来处理 HTTP 请求
+**SpringMVC** 是 Spring 框架里面做 Web 开发（写后端接口）的模块，专门用来处理 HTTP 请求
 
 简单流程（浏览器 ↔ 后端）：
 
 1. 前端浏览器发 HTTP 请求
+
 2. 请求进到服务器，交给 SpringMVC
+
 3. SpringMVC 根据 **@RequestMapping**，找到匹配的 Controller 方法
-4. 执行 Controller，得到返回的 Java 对象
-5. SpringMVC 把 Java 对象转成 **JSON**，封装成 HTTP 响应返回浏览器
+
+4. 如果 Controller 方法的参数是一个对象
+
+    Spring 会使用 **ServletModelAttributeMethodProcessor** 这个参数解析器来处理没有 @RequestBody 等注解的复杂对象参数
+
+    - **实例化对象**：Spring 首先会通过反射调用 该对象类的无参构造函数，创建一个空的对象实例
+    - **获取请求参数**：Spring 拿到前端传来的所有键值对 (Key-Value)
+    - **属性赋值 (Setter 注入)**：Spring 会遍历请求中的参数名 (Key)，去该类中寻找同名的属性，并调用该属性对应的 setter 方法将值赋进去
+
+5. 执行 Controller，得到返回的 Java 对象
+
+6. SpringMVC 把 Java 对象转成 **JSON**，封装成 HTTP 响应返回浏览器
 
 
 
@@ -106,27 +118,33 @@ SpringMVC 是 Spring 框架里面做 Web 开发（写后端接口）的模块，
 
 配置类是 Spring 框架（尤其是 Spring Boot）中**最核心的装配机制之一**。它本质上就是一个加了 **@Configuration** 注解的 Java 类，用来**替代传统的 XML 配置文件**，以纯 Java 代码的方式定义 Bean、组织依赖、开启功能
 
-Spring 容器启动时会**扫描它**，并把它内部声明的 **Bean** 注册到 **IoC 容器**中
+1. **Spring 容器启动时会扫描它**，并把它内部声明的 **Bean** 注册到 **IoC 容器**中
 
-示例：
+    示例：
 
-```java
-@Configuration
-public class MybatisConfig {
-    @Bean
-    public MybatisPlusInterceptor mybatisPlusInterceptor() {
-        // ...
-   }
-}
-```
+    ```java
+    @Configuration
+    public class MybatisConfig {
+        @Bean
+        public MybatisPlusInterceptor mybatisPlusInterceptor() {
+            // ...
+       }
+    }
+    ```
 
-等价于：
+    等价于：
 
-```xml
-<beans>
-    <bean id="mybatisPlusInterceptor" class="com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor"/>
-</beans>
-```
+    ```xml
+    <beans>
+        <bean id="mybatisPlusInterceptor" class="com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor"/>
+    </beans>
+    ```
+
+2. 用 **@Import** 把另一个配置类（或普通类）导入进来，合并生效。这让你能把配置拆成多个模块，再在一个主配置里聚合
+
+3. 经常作为“开关”的载体，配合 **@Enable*** 系列注解使用
+
+
 
 
 
@@ -134,6 +152,8 @@ public class MybatisConfig {
 
 - **@Configuration（全配置）：**Spring 会用 **CGLIB 动态代理** 增强这个类
 - **@Component + @Bean（轻量配置）：**不会代理，就是普通类
+
+
 
 
 
@@ -399,7 +419,7 @@ Content-Type: application/json
 ```
 
 - JSON 格式的参数，通常会使用一个实体对象进行接收
-- 规则：JSON 数据的**键名**与方法**形参对象的属性名**相同，并需要使用 **@RequestBody** 注解标识
+- 规则：**JSON 数据的键名与方法形参对象的属性名相同**，并需要使用 **@RequestBody** 注解标识
 
 ```java
 @PostMapping("/depts")
@@ -1872,56 +1892,78 @@ public class CommonConfig {
 
 
 
-##### @Import 导入
+##### @Import
 
-@Import 导入的类会被 Spring 加载到 IOC 容器中，导入形式主要有以下几种：
+告诉 Spring 容器，**把指定的类加载到 IoC 容器中**。它通常写在 @Configuration 配置类上，或者直接写在启动类上
 
-1. 导入 **普通类**
+@Import 最强大的地方在于，它的括号里不仅可以填普通的类，还可以填**特殊接口的实现类**，从而引发不同的行为
 
-    ```java
-    @Import(TokenParser.class) 
-    ```
+它支持三种类型：
 
-2. 导入 **配置类**
+1. **导入普通类（直接注册为 Bean）**
 
-    ```java
-    @Configuration
-    public class HeaderConfig {
-    
-        @Bean
-        public HeaderParser headerParser(){
-            return new HeaderParser();
+    你可以直接把任何普通的 Java 类（哪怕没加 @Component、@Service）写进 @Import 里
+
+    - **行为**：Spring 会把这个类实例化，并注册到容器中，**Bean 的名称默认是全限定类名**（如 com.example.MyService）
+
+    - **场景**：引入第三方的工具类，你不想或不能去修改它的源码加 @Component
+
+    - **代码示例**：
+
+        ```java
+        @Configuration
+        @Import({MyUtils.class, UserService.class})
+        public class AppConfig { }
+        ```
+
+2. **导入配置类（@Configuration 类）**
+
+    如果括号里填的是一个被 @Configuration 标记的类
+
+    - **行为**：相当于把这个配置类里的所有 @Bean 方法都合并到了当前配置类中一起解析
+    - **场景**：拆分复杂的配置，比如一个主配置类导入多个子模块的配置类（比如 WebConfig、DbConfig）
+
+3. ##### ⭐导入 ImportSelector 接口的实现类（动态批量导入）
+
+    这是高级框架（如 Spring Boot 自动装配）最常用的方式
+
+    - **行为**：Spring 会调用这个实现类里面的 **selectImports( )** 方法
+
+        ​	    这个方法**返回一个字符串数组**，数组里面装的是类的全限定名。Spring 会把这些返回的类全部注册为 Bean
+
+    - **特点**：它可以根据条件（比如配置文件、环境变量）**动态决定**要导入哪些类（“按需加载”）
+
+    - **代码示例**：
+
+        ```java
+        public class MyImportSelector implements ImportSelector {
+            @Override
+            public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+                // 这里可以根据条件判断，返回不同的类名
+                return new String[]{"com.example.BeanA", "com.example.BeanB"};
+            }
         }
-    
-        @Bean
-        public HeaderGenerator headerGenerator(){
-            return new HeaderGenerator();
-        }
-    }
-    ```
-
-    ```java
-    @Import(HeaderConfig.class)
-    ```
-
-3. 导入 **ImportSelector 接口实现类**
-
-    Spring 提供的**接口**，配合 @Import 使用，**批量导入多个类到 IOC 容器**，返回需要导入类的**全限定类名字符串数组**，不需要加@Component/@Configuration，Spring 会自动把这些类注册为 Bean
-
-    ```java
-    public class MyImportSelector implements ImportSelector {
         
-        public String[] selectImports(AnnotationMetadata importingClassMetadata) {
-            return new String[]{"com.example.HeaderConfig", "com.example.TokenParser"};
-        }
-    }
-    ```
+        @Configuration
+        @Import(MyImportSelector.class) // 动态导入了 BeanA 和 BeanB
+        public class AppConfig {}
+        ```
 
-    ```java
-    @Import(MyImportSelector.class) 
-    ```
+    - **典型代表**：Spring Boot 的 **@EnableAutoConfiguration** 底层就是导入了一个叫 **AutoConfigurationImportSelector** 的类，它读取 META-INF/spring.factories 文件，把里面几百个自动配置类全导进来
 
-4. **@EnableXXX 注解**
+4. **⭐ 导入 ImportBeanDefinitionRegistrar 接口的实现类（手动注册 Bean）**
+
+    - **行为**：Spring 会调用它的 **registerBeanDefinitions( )** 方法
+
+        ​	   这个方法里你可以拿到 **BeanDefinitionRegistry**（Bean 定义注册表）
+
+        ​	   你可以用代码的方式，极其精细地手动向容器注册 Bean（甚至修改已有 Bean 的属性）
+
+    - **场景**：当你需要**批量注册接口的动态代理对象**时（比如 MyBatis）
+
+    - **典型代表**：MyBatis 的 **@MapperScan** 底层就是导入了一个叫 **MapperScannerRegistrar**（实现了该接口）的类。它扫描你指定的包，发现所有接口，然后利用工厂模式（FactoryBean）为每个接口生成动态代理类，注册到 Spring 容器中。所以你不需要写实现类就能注入 Mapper
+
+5. **@EnableXXX 注解**
 
     Spring / SpringBoot 里**批量开启某套功能**的注解，底层就是**封装@Import**，通过 @Import 导入一批配置类 / ImportSelector 实现类，一次性向 IOC 容器导入大量 Bean
 
