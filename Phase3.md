@@ -1,6 +1,4 @@
-# day01
-
-## ###
+# 0.
 
 ### 1.开发规范
 
@@ -235,9 +233,7 @@ public class GlobalExceptionHandler {
 
 
 
-# day2
-
-## 增删改查
+# 1. 增删改查
 
 ### 1.结果封装
 
@@ -499,11 +495,7 @@ public Result getInfo(@PathVariable Integer id){
 
 
 
-# day3
-
-## 日志+多表关系
-
-### 1.日志技术
+# 2. 日志
 
 - **JUL**：
 
@@ -613,7 +605,7 @@ public class LogExample {
 
 
 
-### 2.多表关系
+# 3. 多表关系
 
 #### 一对多：
 
@@ -738,11 +730,7 @@ select * from t1 where column1 = (select column1 from t2 ...);
 
 
 
-# day4
-
-## 分页查询+接受日期参数
-
-### 1.分页查询
+# 4. 分页查询
 
 #### 原始分页查询
 
@@ -886,7 +874,7 @@ Executor.query(...)
 
 
 
-### 2.接受日期参数
+# 5. 日期参数
 
 #### @DateTimeFormat
 
@@ -915,9 +903,7 @@ public void test(@DateTimeFormat(pattern = "yyyy‑MM‑dd") Date birthday){
 
 
 
-# day5
-
-## 事务管理
+# 6. 事务管理
 
 #### 1.事务
 
@@ -1029,9 +1015,7 @@ public void b(){
 
 
 
-# day6
-
-## 文件上传
+# 7. 文件上传
 
 #### 文件上传
 
@@ -1191,11 +1175,9 @@ public class AliyunOSSProperties {
 
 
 
-# day7
+# 8. 会话技术
 
-## 会话技术
-
-### 会话技术
+#### 概述
 
 - 会话：用户打开浏览器，访问 web 服务器的资源，会话建立，直到有一方断开连接，会话结束。在一次会话中可以包含多次请求和响应
 - 会话跟踪：一种维护浏览器状态的方法，服务器需要识别多次请求是否来自于同一浏览器，以便在同一次会话的多次请求间共享数据
@@ -1485,11 +1467,7 @@ public class WebConfig implements WebMvcConfigurer {
 
 
 
-# day8
-
-## AOP+ThreadLocal
-
-### 1.AOP
+# 9. AOP
 
 **Aspect Oriented Programming（面向切面编程、面向方面编程）**。可简单理解为就是面向特定方法编程，底层依靠动态代理技术
 
@@ -1734,7 +1712,7 @@ execution(访问修饰符?  返回值  包名.类名.?方法名(方法参数) th
 
 
 
-### 2. ThreadLocal\<T> 
+# 10. ThreadLocal\<T> 
 
 **ThreadLocal\<T>** 让**同一个变量**在每个线程中都拥有一份**独立的副本**，从而避免多线程环境下的共享冲突，实现线程安全
 
@@ -1783,11 +1761,7 @@ Thread‑1、Thread‑2、Thread‑3…… 每个线程各自持有自己的 **T
 
 
 
-# day9
-
-## SpringBoot 原理
-
-### 1. SpringBoot 原理
+# 11. SpringBoot 原理
 
 #### 1. SpringBoot 配置优先级（低 -> 高）
 
@@ -2032,9 +2006,7 @@ Maven: org.springframework.boot:spring-boot-starter:3.2.6
 
 
 
-# day10
-
-## 1.Maven高级
+# 12. Maven高级
 
 #### 1. Maven 的 \<packaging> 打包类型
 
@@ -2188,9 +2160,7 @@ maven 中**继承**与**聚合**的联系与区别
 
 
 
-# day11(前端)
-
-## Vue
+# 13. Vue
 
 ### 1. Vue 工程化
 
@@ -2434,7 +2404,7 @@ onMounted(()=>{ //声明钩子函数
 
 
 
-### 6.在根组件下引入其他 vue 组件
+### 6. 在根组件下引入其他 vue 组件
 
 根组件代码：
 
@@ -2454,7 +2424,7 @@ import 组件名 from '目录位置'
 
 
 
-### 7.ElementPlus
+### 7. ElementPlus
 
 Element: 是饿了么团队研发的，基于 Vue3, 面向设计师和开发者的组件库。
 
@@ -2492,9 +2462,7 @@ Element: 是饿了么团队研发的，基于 Vue3, 面向设计师和开发者�
 
 
 
-# day12
-
-## 1.Vue Router
+### 8. Vue Router
 
 Vue Router 是 Vue 官方的客户端路由解决方案
 
@@ -2517,7 +2485,7 @@ https://router.vuejs.org/zh/
 
 
 
-## 2.请求工具类
+### 9. 请求工具类
 
 在使用 axios 请求数据时，会有请求路径难以维护，数据解析繁琐的问题
 
@@ -2552,7 +2520,7 @@ export default request
 
 
 
-## 3. Watch 侦听
+### 10. Watch 侦听
 
 作用：侦听一个或多个**响应式数据源**，并在**数据源变化时**调用传入的回调函数
 
@@ -2602,7 +2570,7 @@ watch(user, (newVal , oldVal) => {
 
 
 
-## 4. localStorage
+### 11. localStorage
 
 localStorage 是浏览器提供的本地存储机制（5MB）
 
@@ -2621,7 +2589,7 @@ API 方法：
 
 
 
-# day13（项目部署）
+# 14. 项目部署
 
 ## 1.Nginx
 
@@ -3319,9 +3287,7 @@ source /etc/profile
 
 
 
-# day14
-
-## Docker
+# 15. Docker
 
 Docker 是**容器化平台**
 

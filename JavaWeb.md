@@ -1,4 +1,4 @@
-# day0
+# 0. 
 
 1. **AI自动生成代码：alt+p** 
 
@@ -22,9 +22,7 @@
 
 
 
-# day1
-
-### Web 基础
+# 1. Web 基础
 
 #### 1.Web 基础
 
@@ -329,9 +327,7 @@ alert('Hello World');
 
 
 
-# day2
-
-### 正文排版
+# 2. 正文排版
 
 #### 1.正文排版
 
@@ -491,9 +487,7 @@ alert('Hello World');
 
 
 
-# day3
-
-### JS
+# 3. JS
 
 #### 1.JS基本语法
 
@@ -815,11 +809,7 @@ import myMinus from './math.js'
 
 
 
-# day4
-
-### Vue + Ajax
-
-#### 1.Vue
+# 4. Vue
 
 **Vue** 是一款用于构建用户界面的**渐进式（按需引入，一点点使用；想用多少就用多少）**的 JavaScript 框架，能基于数据渲染出用户看到的界面
 
@@ -951,7 +941,7 @@ createApp({
 
 
 
-##### 常用指令
+### 常用指令
 
 - 指令：HTML 标签上带有 **v‑ 前缀**的特殊属性，不同的指令具有不同的含义，可以实现不同的功能
 
@@ -1118,7 +1108,7 @@ const app = createApp({
 
 
 
-#### 2.Ajax
+# 5. Ajax
 
 ##### 概念
 
@@ -1269,11 +1259,7 @@ methods: {
 
 
 
-# day5
-
-### Maven + JUnit
-
-#### 1.Maven
+# 6. Maven
 
 **Maven** 是一款用于管理和构建 Java 项目的项目工程管理规范 + 执行工具，是 apache 旗下的一个开源项目，它基于**项目对象模型（POM）**的概念，通过一小段描述信息来管理项目的构建。
 
@@ -1464,7 +1450,7 @@ Maven 的生命周期就是为了对所有的 maven 项目构建过程进行抽�
 
 
 
-#### 6.Maven测试
+#### 7.Maven测试
 
 ##### 测试
 
@@ -1499,7 +1485,7 @@ Maven 的生命周期就是为了对所有的 maven 项目构建过程进行抽�
 
 
 
-#### 7. JUnit
+# 7. JUnit
 
 最流行的 Java 测试框架之一，提供了一些功能，方便程序进行单元测试（第三方公司提供）
 
@@ -1511,7 +1497,7 @@ Maven 的生命周期就是为了对所有的 maven 项目构建过程进行抽�
 
 
 
-##### 测试步骤：
+#### 测试步骤：
 
 1. 在 pom.xml 中引入依赖
 
@@ -1584,7 +1570,7 @@ void testEvenNumber(int num){
 
 
 
-#### 8.依赖范围
+#### 依赖范围
 
 依赖的 jar 包，默认情况下，可以在任何地方使用。可以通过 **`<scope>...</scope>`** 设置其作用范围
 
@@ -1616,7 +1602,7 @@ void testEvenNumber(int num){
 
 
 
-#### 9.常见问题
+#### 常见问题
 
 有时依赖会爆红
 
@@ -1642,9 +1628,7 @@ void testEvenNumber(int num){
 
 
 
-# day6
-
-## Spring+http
+# 8. Spring
 
 **静态资源：**
 
@@ -1666,11 +1650,13 @@ Client/Server，客户端 / 服务器架构模式。需要单独开发维护客�
 
 
 
-### 1.Spring
-
 Spring 是开源、轻量级的 Java 企业级开发框架，核心是 **IoC 容器** + **AOP**，用来解耦组件，简化 Java 后端开发
 
 官网：https://spring.io
+
+
+
+
 
 #### Spring 生态圈（Spring 全家桶）
 
@@ -1883,7 +1869,7 @@ class UserMapperTest {
 
 
 
-### 2.http
+# 9. http
 
 ##### **HyperText Transfer Protocol**：
 
@@ -2026,9 +2012,7 @@ public ResponseEntity<String> response() {
 
 
 
-# day7
-
-### SpringBoot 标准分层+分层解耦
+# 10. SpringBoot 标准分层+分层解耦
 
 #### 1.SSM/SpringBoot 标准分层
 
@@ -2213,9 +2197,7 @@ public class UserController {
 
 
 
-# day8
-
-### 数据库
+# 11. 数据库
 
 #### 1.数据库
 
@@ -2630,11 +2612,7 @@ if(条件表达式, 条件为真时返回的值, 条件为假时返回的值)
 
 
 
-# day9
-
-## JDBC + MyBatis
-
-### 1. JDBC
+# 12. JDBC
 
 **JDBC : (Java DataBase Connectivity)**
 
@@ -2836,7 +2814,7 @@ ResultSet resultSet = pstmt.executeQuery();
 
 
 
-### 2.MyBatis
+# 13. MyBatis
 
 #### 1. MyBatis
 

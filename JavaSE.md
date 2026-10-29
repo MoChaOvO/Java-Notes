@@ -1,4 +1,4 @@
-# 基础操作
+# -1. 基础操作
 
 ### ### 
 
@@ -76,9 +76,7 @@
 
 
 
-# day0
-
-### Java 项目层级
+# 0. Java 项目层级
 
 ##### 1. 项目（Project）
 
@@ -115,9 +113,9 @@
 
 
 
-# day1
+# 1. 基础语法 
 
-### 基础语法 
+### ###
 
 ##### -1. 面向对象编程（OOP）的三大核心特性
 
@@ -307,9 +305,7 @@ long t = System.currentTimeMillis( );
 
 
 
-# day2
-
-### 修饰符
+# 2. 修饰符
 
 ##### 1. 权限修饰符（最高在同一个模块内）：
 
@@ -362,9 +358,7 @@ public class HelloWorld {
 
 
 
-# day3
-
-### 继承
+# 3. 继承
 
 ##### 1. @Override 
 
@@ -446,9 +440,7 @@ JDK9 之后，接口中可以定义私有方法，供接口内部方法调用
 
 
 
-# day4
-
-### 多态
+# 4. 多态
 
 ##### 多态
 
@@ -550,9 +542,7 @@ public class Test {
 
 
 
-# day5
-
-### 代码块 + 内部类 + Lambda
+# 5. 代码块 + 内部类 + Lambda
 
 ##### 1. instanceof 
 
@@ -742,9 +732,7 @@ new 父类或接口名(构造参数) {
 
 
 
-# day6
-
-### String
+# 6. String
 
 #### 1.String 类的构造方法：
 
@@ -948,9 +936,7 @@ public String toString ()
 
 
 
-# day7
-
-### 泛型
+# 7. 泛型
 
 #### 1. 泛型中只能编写引用数据类型
 
@@ -1001,9 +987,7 @@ public String toString ()
 
 
 
-# day8
-
-### Collection + 迭代器
+# 8. Collection + 迭代器
 
 #### 1. Collection 体系⭐⭐⭐⭐⭐
 
@@ -1222,9 +1206,7 @@ while (it.hasNext()) {
 
 
 
-# day9
-
-### Set
+# 9. Set
 
 ##### 1. ⭐Set 集合特点：存取无序，无索引，不可以存储重复的。
 
@@ -1394,9 +1376,7 @@ public static <T> void sort(List<T> list, Comparator<? super T> c)
 
 
 
-# day10
-
-### Map
+# 10. Map
 
 #### 1.Map 集合⭐⭐⭐⭐⭐
 
@@ -1656,9 +1636,7 @@ void accept(T t, U u)
 
 
 
-# day11
-
-### Stream 接口
+# 11. Stream 接口
 
 不存数据，只是 “**引用**” 着数据源。**一次性**，用完就废，流的操作**不会修改数据源**
 
@@ -1883,9 +1861,7 @@ R apply(T t);
 
 
 
-# day12
-
-### 异常
+# 12. 异常
 
 #### 1. Throwable
 
@@ -2008,9 +1984,7 @@ public void printStackTrace ()　
 
 
 
-# day13
-
-### File 类
+# 13. File 类
 
 #### 0. Windows 的文件路径
 
@@ -2247,9 +2221,7 @@ public File[] listFiles ()
 
 
 
-# day14
-
-### 工具类
+# 14. 工具类
 
 #### 1.Math类
 
@@ -2717,9 +2689,7 @@ ChronoUnit.常量.between(起始LocalDateTime, 结束LocalDateTime)
 
 
 
-# day15
-
-### IO
+# 15. IO
 
 #### 0.IO流
 
@@ -3090,9 +3060,7 @@ void store (Writer writer, String comments)     //将集合的键值对文件写
 
 
 
-# day16
-
-### 线程
+# 16. 线程
 
 #### 1.线程和进程
 
@@ -3710,9 +3678,7 @@ public class ThreadPoolSumDemo {
 
 
 
-# day17
-
-### 网络编程
+# 17. 网络编程
 
 #### 1.网络编程基础
 
@@ -3994,9 +3960,7 @@ public int getLocalPort()
 
 
 
-# day18
-
-### Java 高级特性
+# 18. Java 高级特性
 
 #### 1.枚举enum
 
@@ -4647,3 +4611,127 @@ public class Main {
 }
 ```
 
+
+
+
+
+
+
+# EX1. 工厂方法
+
+工厂方法是一种**创建型设计模式**，它定义了一个用于创建对象的接口，但让子类决定实例化哪个类
+
+工厂方法让类的实例化推迟到子类中进行
+
+
+
+#### 基础角色
+
+| 角色                        | 职责                       |
+| :-------------------------- | :------------------------- |
+| Product（抽象产品）         | 定义产品接口               |
+| ConcreteProduct（具体产品） | 实现产品接口               |
+| Creator（抽象工厂）         | 声明工厂方法，返回 Product |
+| ConcreteCreator（具体工厂） | 实现工厂方法，返回具体产品 |
+
+
+
+#### 基础实现
+
+##### 产品
+
+```java
+// 抽象产品
+interface Product {
+    void use();
+}
+
+// 具体产品 A
+class ProductA implements Product {
+    public void use() {
+        System.out.println("使用产品 A");
+    }
+}
+
+// 具体产品 B
+class ProductB implements Product {
+    public void use() {
+        System.out.println("使用产品 B");
+    }
+}
+```
+
+##### 工厂
+
+```java
+// 抽象工厂
+abstract class Factory {
+    // 工厂方法
+    public abstract Product createProduct();
+    
+    // 模板方法，可复用业务逻辑
+    public void doSomething() {
+        Product p = createProduct();
+        p.use();
+    }
+}
+
+// 具体工厂 A
+class FactoryA extends Factory {
+    public Product createProduct() {
+        return new ProductA();
+    }
+}
+
+// 具体工厂 B
+class FactoryB extends Factory {
+    public Product createProduct() {
+        return new ProductB();
+    }
+}
+```
+
+##### 使用
+
+```java
+public class Client {
+    public static void main(String[] args) {
+        Factory factory = new FactoryA();
+        factory.doSomething();
+    }
+}
+```
+
+
+
+#### Java 中的实际例子
+
+创建一个迭代器对象
+
+```java
+List<String> list = new ArrayList<>();
+Iterator<String> it = list.iterator(); // 由具体集合中的对象类型决定返回哪种迭代器
+```
+
+
+
+#### 优缺点
+
+**优点**
+
+- 解耦：调用方只依赖抽象产品
+- 符合开闭原则：新增产品无需修改已有代码
+- 可复用工厂中的通用逻辑（如模板方法中的流程）
+
+**缺点**
+
+- 类数量膨胀，每加一个产品就要加一个工厂类
+- 增加系统抽象层次，理解成本上升
+
+
+
+#### 适用场景
+
+- 无法预知需要创建哪类对象（由运行环境或配置决定）
+- 类希望由其子类指定创建的对象
+- 需要把对象创建和使用分离，便于扩展和测试

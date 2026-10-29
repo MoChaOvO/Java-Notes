@@ -215,7 +215,7 @@ Java 序列化机制使用的"类版本号"，保证"序列化时"和"反序列�
 
 Mybatis-Plus（简称MP）是一个基于Mybatis框架的增强工具，它在Mybatis的基础上只做增强而不做改变，旨在简化开发、提高效率
 
-Mybatis-Plus提供了一系列的功能和特性，使得开发人员能够更加高效地使用Mybatis进行数据库操作
+它省去了单表基础 CRUD 的重复代码，并提供了强大的链式条件构造器，但条件构造器本身仅支持单表操作；若涉及多表联查，仍需回归原生 MyBatis 手写 SQL
 
 官网地址：https://mybatis.plus/
 
@@ -263,7 +263,7 @@ public class TliasMangementSystemApplication {
 
 #### BaseMapper
 
-为了简化单表CRUD，Mybatis-Plus提供了一个基础的 **BaseMapper** 接口，其中已经实现了单表的CRUD：
+为了简化**单表 **CRUD，Mybatis-Plus 提供了一个基础的 **BaseMapper** 接口，其中已经实现了单表的 CRUD：
 
 ##### 增
 
@@ -542,40 +542,45 @@ classDiagram
 
 ##### **AbstractWrapper** 
 
-**Wrapper** 的子类 **AbstractWrapper** 提供了where中包含的所有类型条件的构建方法：
+**Wrapper** 的子类 **AbstractWrapper** 提供了where中包含的所有类型**条件的构建**方法：
 
-| 方法签名                                      | 返回类型  | 具体功能描述                    | 对应 SQL 逻辑 / 说明                          |
-| :-------------------------------------------- | :-------- | :------------------------------ | :-------------------------------------------- |
-| **getEntity()**                               | T         | 获取当前 Wrapper 内部的实体对象 | 用于获取通过 setEntity 传入的实体             |
-| **setEntity(T)**                              | Children  | 设置 Wrapper 内部的实体对象     | 常用于 UpdateWrapper 中设置要更新的数据       |
-| **getEntityClass()**                          | Class\<T> | 获取实体类的 Class 对象         | 获取泛型 T 的实际类型                         |
-| **setEntityClass(Class\<T>)**                 | Children  | 设置实体类的 Class 对象         | 手动指定泛型 T 的类型                         |
-| **allEq(boolean, Map<R, V>, boolean)**        | Children  | 批量等于（Map 形式）            | WHERE key1 = val1 AND key2 = val2...          |
-| **allEq(boolean, BiPredicate, Map, boolean)** | Children  | 批量等于（带过滤器）            | 同上，但可通过 BiPredicate 过滤掉不需要的字段 |
-| **eq(boolean, R, Object)**                    | Children  | 等于                            | column = val                                  |
-| **ne(boolean, R, Object)**                    | Children  | 不等于                          | column <> val                                 |
-| **gt(boolean, R, Object)**                    | Children  | 大于                            | column > val                                  |
-| **ge(boolean, R, Object)**                    | Children  | 大于等于                        | column >= val                                 |
-| **lt(boolean, R, Object)**                    | Children  | 小于                            | column < val                                  |
-| **le(boolean, R, Object)**                    | Children  | 小于等于                        | column <= val                                 |
-| **like(boolean, R, Object)**                  | Children  | 全模糊查询                      | column LIKE '%val%'                           |
-| **notLike(boolean, R, Object)**               | Children  | 全模糊不匹配                    | column NOT LIKE '%val%'                       |
-| **likeLeft(boolean, R, Object)**              | Children  | 左模糊查询                      | column LIKE '%val' (以 val 结尾)              |
-| **likeRight(boolean, R, Object)**             | Children  | 右模糊查询                      | column LIKE 'val%' (以 val 开头)              |
-| **notLikeLeft(boolean, R, Object)**           | Children  | 左模糊不匹配                    | column NOT LIKE '%val'                        |
-| **notLikeRight(boolean, R, Object)**          | Children  | 右模糊不匹配                    | column NOT LIKE 'val%'                        |
-| **between(boolean, R, Object, Object)**       | Children  | 范围查询（包含边界）            | column BETWEEN val1 AND val2                  |
-| **notBetween(boolean, R, Object, Object)**    | Children  | 范围查询（排除边界）            | column NOT BETWEEN val1 AND val2              |
-| **and(boolean, Consumer)**                    | Children  | 逻辑与嵌套（AND (...)）         | AND (嵌套的 SQL 片段)，常用于拼接括号         |
-| **or(boolean, Consumer)**                     | Children  | 逻辑或嵌套（OR (...)）          | OR (嵌套的 SQL 片段)，用于改变优先级          |
-| **nested(boolean, Consumer)**                 | Children  | 正常嵌套（(...)）               | AND (嵌套的 SQL 片段)，and 的默认行为         |
-| **not(boolean, Consumer)**                    | Children  | 逻辑非嵌套（NOT (...)）         | NOT (嵌套的 SQL 片段)                         |
+| 方法签名                      | 返回类型  | 具体功能描述                    | 对应 SQL 逻辑 / 说明                    |
+| :---------------------------- | :-------- | :------------------------------ | :-------------------------------------- |
+| **getEntity()**               | T         | 获取当前 Wrapper 内部的实体对象 | 用于获取通过 setEntity 传入的实体       |
+| **setEntity(T)**              | Children  | 设置 Wrapper 内部的实体对象     | 常用于 UpdateWrapper 中设置要更新的数据 |
+| **getEntityClass()**          | Class\<T> | 获取实体类的 Class 对象         | 获取泛型 T 的实际类型                   |
+| **setEntityClass(Class\<T>)** | Children  | 设置实体类的 Class 对象         | 手动指定泛型 T 的类型                   |
+
+以下方法的返回值均为 **Children**
+
+| **方法签名**                                  | **说明**                | **SQL 示例**                                  |
+| :-------------------------------------------- | :---------------------- | :-------------------------------------------- |
+| **allEq(boolean, Map<R, V>, boolean)**        | 批量等于（Map 形式）    | WHERE key1 = val1 AND key2 = val2...          |
+| **allEq(boolean, BiPredicate, Map, boolean)** | 批量等于（带过滤器）    | 同上，但可通过 BiPredicate 过滤掉不需要的字段 |
+| **eq(boolean, R, Object)**                    | 等于                    | column = val                                  |
+| **ne(boolean, R, Object)**                    | 不等于                  | column <> val                                 |
+| **gt(boolean, R, Object)**                    | 大于                    | column > val                                  |
+| **ge(boolean, R, Object)**                    | 大于等于                | column >= val                                 |
+| **lt(boolean, R, Object)**                    | 小于                    | column < val                                  |
+| **le(boolean, R, Object)**                    | 小于等于                | column <= val                                 |
+| **like(boolean, R, Object)**                  | 全模糊查询              | column LIKE '%val%'                           |
+| **notLike(boolean, R, Object)**               | 全模糊不匹配            | column NOT LIKE '%val%'                       |
+| **likeLeft(boolean, R, Object)**              | 左模糊查询              | column LIKE '%val' (以 val 结尾)              |
+| **likeRight(boolean, R, Object)**             | 右模糊查询              | column LIKE 'val%' (以 val 开头)              |
+| **notLikeLeft(boolean, R, Object)**           | 左模糊不匹配            | column NOT LIKE '%val'                        |
+| **notLikeRight(boolean, R, Object)**          | 右模糊不匹配            | column NOT LIKE 'val%'                        |
+| **between(boolean, R, Object, Object)**       | 范围查询（包含边界）    | column BETWEEN val1 AND val2                  |
+| **notBetween(boolean, R, Object, Object)**    | 范围查询（排除边界）    | column NOT BETWEEN val1 AND val2              |
+| **and(boolean, Consumer)**                    | 逻辑与嵌套（AND (...)） | AND (嵌套的 SQL 片段)，常用于拼接括号         |
+| **or(boolean, Consumer)**                     | 逻辑或嵌套（OR (...)）  | OR (嵌套的 SQL 片段)，用于改变优先级          |
+| **nested(boolean, Consumer)**                 | 正常嵌套（(...)）       | AND (嵌套的 SQL 片段)，and 的默认行为         |
+| **not(boolean, Consumer)**                    | 逻辑非嵌套（NOT (...)） | NOT (嵌套的 SQL 片段)                         |
 
 方法签名里的第一个参数 **boolean**，是用来控制“是否将这个查询条件拼接到最终 SQL 中”的开关（前置判断条件），比如先验证该字段是否为空
 
 
 
-**QueryWrapper 拓展的方法**
+**QueryWrapper 拓展 select 方法**
 
 在 **AbstractWrapper** 的基础上拓展了 **select** 方法，允许指定查询字段
 
@@ -601,13 +606,13 @@ public void testQueryWrapper() {
 
 
 
-**UpdateWrapper 拓展的方法**
+**UpdateWrapper 拓展 set 方法**
 
 在 **AbstractWrapper** 的基础上拓展了 **set** 方法，允许指定 SQL 中的 SET 部分
 
 | 方法签名                                 | 返回类型          | 功能分类 | 具体功能描述                                              |
 | :--------------------------------------- | :---------------- | :------- | :-------------------------------------------------------- |
-| **getSqlSet()**                          | String            | 获取 SQL | 获取当前拼装的 `SET` 部分的 SQL 语句                      |
+| **getSqlSet( )**                         | String            | 获取 SQL | 获取当前拼装的 `SET` 部分的 SQL 语句                      |
 | **set(boolean, String, Object, String)** | UpdateWrapper\<T> | 更新字段 | 设置 `SET` 字段，包含条件开关、列名、值以及自定义 mapping |
 | **setSql(boolean, String)**              | UpdateWrapper\<T> | 更新字段 | 直接设置原生的 `SET` SQL 片段，包含条件开关               |
 
@@ -676,6 +681,14 @@ public void testLambdaUpdateWrapper() {
 
 用法：直接链式调用条件方法后，接 `.list()`、`.one()`、`.count()` 等即可执行
 
+| 方法名         | 返回类型     | 对应 SQL 行为                      | 适用场景及注意事项                                           |
+| :------------- | :----------- | :--------------------------------- | :----------------------------------------------------------- |
+| **list( )**    | List\<T>     | SELECT * (查询所有字段)            | 用于查询多条记录，返回实体对象集合。注意：如果数据量大，避免全表查出导致内存溢出。 |
+| **one( )**     | T (实体对象) | SELECT * LIMIT 1 (底层处理)        | 用于查询单条记录（如根据主键、唯一索引查询）。注意：如果根据条件查出多条结果，会直接抛出异常（TooManyResultsException）。 |
+| **count( )**   | Long         | SELECT COUNT(*)                    | 用于统计符合条件的记录总数。通常配合分页或单独统计使用。     |
+| **exists( )**  | Boolean      | SELECT COUNT(*) 或 SELECT 1        | 用于判断是否存在符合条件的记录。比 count() > 0 性能更好，常用于数据校验（如“手机号是否已被注册”）。 |
+| **page(Page)** | IPage\<T>    | SELECT * LIMIT ... SELECT COUNT(*) | 用于分页查询。需传入 Page 对象（包含当前页码和每页条数），底层会自动执行查询数据和统计总数的两条 SQL。 |
+
 示例：
 
 ```java
@@ -689,31 +702,51 @@ List<User> list = userService.lambdaQuery()
 
 ##### lambdaQuery( )
 
-开启链式查询，并允许你用方法引用（如 `User::getAge`）来指定字段，有以下两种使用方式：
+**开启方法引用链式查询**
 
-1. **Wrappers.lambdaQuery( )**
+- **Wrappers.lambdaQuery( )**
 
-    来自 **Wrappers 静态工具类**，是一个静态工厂方法
+    - 返回类型：**LambdaQueryWrapper\<T> 条件构造器**
+
+    来自 **Wrappers 静态工具类**，是一个静态工厂方法，通常需要显式指定泛型（如 `Wrappers.<EmpExpr> lambdaQuery()`）才能后续使用方法引用
 
     ```java
     public static <T> LambdaQueryWrapper<T> lambdaQuery()
     ```
 
-    - 返回类型：**LambdaQueryWrapper\<T> 条件构造器**
+    示例：
 
-    通常需要显式指定泛型（如 `Wrappers.<EmpExpr>lambdaQuery()`）才能后续使用方法引用
+    ```java
+    LambdaQueryWrapper<User> wrapper = Wrappers.<User>lambdaQuery()
+            .eq(User::getAge, 25);
+    
+    List<User> userList = userMapper.selectList(wrapper);
+    ```
 
-2. **ServiceImpl 内部的 lambdaQuery( )**
+- **ServiceImpl 内部的 lambdaQuery( )**
 
-    来自 **ServiceImpl**，是一个继承来的实例方法（实际上定义在 `IService` 接口中或通过 `ServiceImpl` 提供）
+    - 返回类型：**LambdaQueryChainWrapper\<T>** **链式查询器**
 
+    来自 **ServiceImpl**，是一个继承来的实例方法（实际上定义在 `IService` 接口中或通过 `ServiceImpl` 提供），泛型 T 由 **ServiceImpl<M, T> 中的 T 自动确定**，不需要显式指定
+    
     ```java
     public LambdaQueryChainWrapper<T> lambdaQuery()
     ```
 
-    - 返回类型：**LambdaQueryChainWrapper\<T>** **链式查询器**
-
-    泛型 T 由 **ServiceImpl<M, T> 中的 T 自动确定**，不需要显式指定
+    示例：
+    
+    ```java
+    @Service
+    public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+    
+        public List<User> searchByName(String name) {
+            // 直接调用 this.lambdaQuery()，泛型 T 已由 ServiceImpl<UserMapper, User> 自动确定
+            return this.lambdaQuery()
+                    .like(User::getName, name)
+                    .list(); // 链式结尾直接执行查询
+        }
+    }
+    ```
 
 
 
@@ -721,9 +754,11 @@ List<User> list = userService.lambdaQuery()
 
 #### IService接口
 
-Mybatis-Plus 不仅提供了Map层接口 BaseMapper，还提供了通用的 **Service 层**接口及默认实现，并在其中封装了一些常用的 service 模板方法
+Mybatis-Plus 不仅提供了 Map 层接口 BaseMapper，还提供了通用的 **Service 层**接口及默认实现，并在其中封装了一些常用的 service 模板方法
 
- 通用接口为 IService，默认实现为 ServiceImpl，其中封装的方法可以分为以下几类：
+**IService** 底层调用 **BaseMapper** 完成对数据库的操作，免去了我们手写 mapper 层代码的步骤
+
+ 通用接口为 **IService**，默认实现为 **ServiceImpl**，其中封装的方法可以分为以下几类：
 
 - **save：**新增
 - **remove：**删除
@@ -735,60 +770,72 @@ Mybatis-Plus 不仅提供了Map层接口 BaseMapper，还提供了通用的 **Se
 
 
 
-##### 新增 save：
+##### 新增 save
 
-- `save`：新增单个元素
-- `saveBatch`：批量新增
-- `saveOrUpdate`：根据id判断，如果数据存在就更新，不存在则新增
-- `saveOrUpdateBatch`：批量的新增或修改
-
-
-
-##### 删除 remove：
-
-- `removeById`：根据id删除
-- `removeByIds`：根据id批量删除
-- `removeByMap`：根据Map中的键值对条件删除
-- `remove(Wrapper<T>)`：根据Wrapper条件删除
-- `~~removeBatchByIds~~`：暂不支持
+| 方法                                         | 说明                                         |
+| :------------------------------------------- | :------------------------------------------- |
+| save(T entity)                               | 新增单个元素                                 |
+| saveBatch(Collection\<T> entityList)         | 批量新增                                     |
+| saveOrUpdate(T entity)                       | 根据id判断，如果数据存在就更新，不存在则新增 |
+| saveOrUpdateBatch(Collection\<T> entityList) | 批量的新增或修改                             |
 
 
 
-##### 修改 update：
+##### 删除 remove
 
-- `updateById`：根据id修改
-- `update(Wrapper<T>)`：根据`UpdateWrapper`修改，`Wrapper`中包含`set`和`where`部分
-- `update(T，Wrapper<T>)`：按照`T`内的数据修改与`Wrapper`匹配到的数据
-- `updateBatchById`：根据id批量修改
-
-
-
-##### 查询**单个**结果 Get：
-
-- `getById`：根据id查询1条数据
-- `getOne(Wrapper<T>)`：根据`Wrapper`查询1条数据
-- `getBaseMapper`：获取`Service`内的`BaseMapper`实现，某些时候需要直接调用`Mapper`内的自定义`SQL`时可以用这个方法获取到`Mapper`
+| 方法                                                        | 说明                      |
+| :---------------------------------------------------------- | :------------------------ |
+| removeById(Serializable id)                                 | 根据id删除                |
+| removeByIds(Collection<? extends Serializable> idList)      | 根据id批量删除            |
+| removeByMap(Map<String, Object> columnMap)                  | 根据Map中的键值对条件删除 |
+| remove(Wrapper\<T> queryWrapper)                            | 根据Wrapper条件删除       |
+| removeBatchByIds(Collection<? extends Serializable> idList) | 暂不支持                  |
 
 
 
-##### 查询**集合**结果 List：
+##### 修改 update
 
-- `listByIds`：根据id批量查询
-- `list(Wrapper<T>)`：根据Wrapper条件查询多条数据
-- `list()`：查询所有
+| 方法                                        | 说明                                               |
+| :------------------------------------------ | :------------------------------------------------- |
+| updateById(T entity)                        | 根据id修改                                         |
+| update(T entity, Wrapper\<T> updateWrapper) | 根据UpdateWrapper修改，Wrapper中包含set和where部分 |
+| update(T entity, Wrapper\<T> queryWrapper)  | 按照T内的数据修改与Wrapper匹配到的数据             |
+| updateBatchById(Collection\<T> entityList)  | 根据id批量修改                                     |
 
 
 
-##### 计数 Count：
+##### 查询单个结果 Get
 
-- `count()`：统计所有数量
-- `count(Wrapper<T>)`：统计符合`Wrapper`条件的数据数量
+| 方法                             | 说明                                                         |
+| :------------------------------- | :----------------------------------------------------------- |
+| getById(Serializable id)         | 根据id查询1条数据                                            |
+| getOne(Wrapper\<T> queryWrapper) | 根据Wrapper查询1条数据                                       |
+| getBaseMapper( )                 | 获取Service内的BaseMapper实现，某些时候需要直接调用Mapper内的自定义SQL时可以用这个方法获取到Mapper |
+
+
+
+##### 查询集合结果 List
+
+| 方法                                                 | 说明                        |
+| :--------------------------------------------------- | :-------------------------- |
+| listByIds(Collection<? extends Serializable> idList) | 根据id批量查询              |
+| list(Wrapper\<T> queryWrapper)                       | 根据Wrapper条件查询多条数据 |
+| list( )                                              | 查询所有                    |
+
+
+
+##### 计数 Count
+
+| 方法                            | 说明                          |
+| :------------------------------ | :---------------------------- |
+| count( )                        | 统计所有数量                  |
+| count(Wrapper\<T> queryWrapper) | 统计符合Wrapper条件的数据数量 |
 
 
 
 **分页 Page：**
 
-于 v3.5.9 起，PaginationInnerInterceptor 已分离出来。如需使用，则需单独引入 **mybatis-plus-jsqlparser 依赖**
+于 v3.5.9 起，**PaginationInnerInterceptor** 已分离出来。如需使用，则需单独引入 **mybatis-plus-jsqlparser 依赖**
 
 ```XML
 <dependency>
@@ -1586,135 +1633,9 @@ Spring 已经将 Swagger 纳入自身的标准，建立了 Spring-Swagger 项目
 
 ##### 核心配置类
 
-位置：`com.zzyl.web.core.config.SwaggerConfig`
+位置：
 
-```java
-package com.zzyl.web.core.config;
-
-import java.util.ArrayList;
-import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import com.zzyl.common.config.RuoYiConfig;
-import io.Swagger.annotations.ApiOperation;
-import io.Swagger.models.auth.In;
-import springfox.documentation.builders.ApiInfoBuilder;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.service.ApiKey;
-import springfox.documentation.service.AuthorizationScope;
-import springfox.documentation.service.Contact;
-import springfox.documentation.service.SecurityReference;
-import springfox.documentation.service.SecurityScheme;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spi.service.contexts.SecurityContext;
-import springfox.documentation.spring.web.plugins.Docket;
-
-/**
- * Swagger2的接口配置
- * 
- * @author ruoyi
- */
-@Configuration
-public class SwaggerConfig
-{
-    /** 系统基础配置 */
-    @Autowired
-    private RuoYiConfig ruoyiConfig;
-
-    /** 是否开启Swagger */
-    @Value("${Swagger.enabled}")
-    private boolean enabled;
-
-    /** 设置请求的统一前缀 */
-    @Value("${Swagger.pathMapping}")
-    private String pathMapping;
-
-    /**
-     * 创建API
-     */
-    @Bean
-    public Docket createRestApi()
-    {
-        return new Docket(DocumentationType.OAS_30)
-                // 是否启用Swagger
-                .enable(enabled)
-                // 用来创建该API的基本信息，展示在文档的页面中（自定义展示的信息）
-                .apiInfo(apiInfo())
-                // 设置哪些接口暴露给Swagger展示
-                .select()
-                // 扫描所有有注解的api，用这种方式更灵活
-                .apis(RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class))
-                // 扫描指定包中的Swagger注解
-                // .apis(RequestHandlerSelectors.basePackage("com.zzyl.project.tool.Swagger"))
-                // 扫描所有 .apis(RequestHandlerSelectors.any())
-                .paths(PathSelectors.any())
-                .build()
-                /* 设置安全模式，Swagger可以设置访问token */
-                .securitySchemes(securitySchemes())
-                .securityContexts(securityContexts())
-                .pathMapping(pathMapping);
-    }
-
-    /**
-     * 安全模式，这里指定token通过Authorization头请求头传递
-     */
-    private List<SecurityScheme> securitySchemes()
-    {
-        List<SecurityScheme> apiKeyList = new ArrayList<SecurityScheme>();
-        apiKeyList.add(new ApiKey("Authorization", "Authorization", In.HEADER.toValue()));
-        return apiKeyList;
-    }
-
-    /**
-     * 安全上下文
-     */
-    private List<SecurityContext> securityContexts()
-    {
-        List<SecurityContext> securityContexts = new ArrayList<>();
-        securityContexts.add(
-                SecurityContext.builder()
-                        .securityReferences(defaultAuth())
-                        .operationSelector(o -> o.requestMappingPattern().matches("/.*"))
-                        .build());
-        return securityContexts;
-    }
-
-    /**
-     * 默认的安全上引用
-     */
-    private List<SecurityReference> defaultAuth()
-    {
-        AuthorizationScope authorizationScope = new AuthorizationScope("global", "accessEverything");
-        AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
-        authorizationScopes[0] = authorizationScope;
-        List<SecurityReference> securityReferences = new ArrayList<>();
-        securityReferences.add(new SecurityReference("Authorization", authorizationScopes));
-        return securityReferences;
-    }
-
-    /**
-     * 添加摘要信息
-     */
-    private ApiInfo apiInfo()
-    {
-        // 用ApiInfoBuilder进行定制
-        return new ApiInfoBuilder()
-                // 设置标题
-                .title("标题：若依管理系统_接口文档")
-                // 描述
-                .description("描述：用于管理集团旗下公司的人员信息,具体包括XXX,XXX模块...")
-                // 作者信息
-                .contact(new Contact(ruoyiConfig.getName(), null, null))
-                // 版本
-                .version("版本号:" + ruoyiConfig.getVersion())
-                .build();
-    }
-}
-```
+com.zzyl.web.core.config.SwaggerConfig
 
 
 
@@ -1800,13 +1721,15 @@ Velocity 是一个基于 Java 的模板引擎，它可以通过特定的语法�
 
 ### 若依中的 Velocity
 
-将数据库表的元数据（字段名、类型、注释等）与预先写好的 `.vm` 模板文件结合，自动渲染出 Entity、Controller、Service、Vue 页面等全套 CRUD 代码
+将数据库表的元数据（字段名、类型、注释等）与预先写好的 **.vm 模板文件**结合，自动渲染出 Entity、Controller、Service、Vue 页面等全套 CRUD 代码
 
 
 
 ##### 核心工作流程
 
 若依通过以下几步完成代码生成：
+
+位置：com.zzyl.generator.service.GenTableServiceImpl
 
 ```java
 /**
@@ -1876,7 +1799,11 @@ private void generatorCode(String tableName, ZipOutputStream zip)
 
 ##### 自定义模板
 
-如果默认生成的代码不符合项目规范（比如想添加 Swagger 注解、调整注释格式），可以直接修改 `resources/vm/` 下对应的 `.vm` 文件。修改后需要重启后端服务，因为若依默认可能开启了模板缓存。如果发现修改不生效，可以检查 `velocity.properties` 中 `file.resource.loader.cache` 是否被设为了 `false`
+如果默认生成的代码不符合项目规范，可以直接修改 `resources/vm/` 下对应的 `.vm` 文件
+
+修改后需要重启后端服务，因为若依默认可能开启了模板缓存
+
+如果发现修改不生效，可以检查 `velocity.properties` 中 `file.resource.loader.cache` 是否被设为了 `false`
 
 
 
@@ -1894,115 +1821,137 @@ MyBatis-Plus 提供的字段自动填充功能是一种非常实用的特性，�
 
 **在MybatisPlus中通过两步可以实现这个功能：**
 
-1. ##### 在实体类中，使用`@TableField`注解，来标明哪些字段是需要自动填充的，并且需要指定填充策略
+1. ##### 在实体类中，使用 @TableField 注解，通过设置 fill 字段来标明哪些字段是需要自动填充的，并且需要指定填充策略
 
-```Java
-package com.zzyl.common.core.domain;
+    FieldFill 是一个枚举，共有四个值：
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+    | 枚举值                      | 含义                       |
+    | :-------------------------- | :------------------------- |
+    | **FieldFill.DEFAULT**       | 默认，不自动填充           |
+    | **FieldFill.INSERT**        | **插入时**自动填充         |
+    | **FieldFill.UPDATE**        | **更新时**自动填充         |
+    | **FieldFill.INSERT_UPDATE** | **插入和更新时**都自动填充 |
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import io.Swagger.annotations.ApiModel;
-import io.Swagger.annotations.ApiModelProperty;
-
-/**
- * Entity基类
- * 
- * @author ruoyi
- */
-@ApiModel("Entity基类")
-public class BaseEntity implements Serializable
-{
-    private static final long serialVersionUID = 1L;
-
-    /** 搜索值 */
-    @JsonIgnore
-    @TableField(exist = false)
-    private String searchValue;
-
-    /** 创建者 */
-    @ApiModelProperty(value = "创建者")
-    @TableField(fill = FieldFill.INSERT)
-    private String createBy;
-
-    /** 创建时间 */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @ApiModelProperty(value = "创建时间")
-    @TableField(fill = FieldFill.INSERT)
-    private Date createTime;
-
-    /** 更新者 */
-    @ApiModelProperty(value = "更新者")
-    @TableField(fill = FieldFill.UPDATE)
-    private String updateBy;
-
-    /** 更新时间 */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @ApiModelProperty(value = "更新时间")
-    @TableField(fill = FieldFill.UPDATE)
-    private Date updateTime;
-
-    /** 备注 */
-    @ApiModelProperty(value = "备注")
-    private String remark;
-
-    /** 请求参数 */
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    @ApiModelProperty(value = "请求参数")
-    @TableField(exist = false)
-    private Map<String, Object> params;
+    ```java
+    package com.zzyl.common.core.domain;
     
-}
-```
-
-2. **在zzyl-framework模块中新增MyMetaObjectHandler 来处理字段自动填充**
-
-```Java
-package com.zzyl.framework.interceptor;
-
-import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
-import com.zzyl.common.core.domain.model.LoginUser;
-import com.zzyl.common.utils.SecurityUtils;
-import org.apache.ibatis.reflection.MetaObject;
-import org.springframework.stereotype.Component;
-
-import java.util.Date;
-
-@Component
-public class MyMetaObjectHandler implements MetaObjectHandler {
-    @Override
-    public void insertFill(MetaObject metaObject) {
-        this.strictInsertFill(metaObject, "createTime", Date.class, DateUtils.getNowDate());
-        this.strictInsertFill(metaObject, "createBy", String.class, String.valueOf(getLoginUser()));
-    }
-
-    @Override
-    public void updateFill(MetaObject metaObject) {
-        this.strictUpdateFill(metaObject, "updateTime", Date.class, DateUtils.getNowDate());
-        this.strictUpdateFill(metaObject, "updateBy", String.class, String.valueOf(getLoginUser()));
-    }
-
+    import...
+    
     /**
-     * 获取当前登录人的ID
-     *
-     * @return 登录人ID
+     * Entity基类
+     * 
+     * @author ruoyi
      */
-    public Long getLoginUser() {
-        LoginUser loginUser = SecurityUtils.getLoginUser();
-        if (loginUser != null) {
-            return loginUser.getUserId();
-        }
-        return 1L;
+    @ApiModel("Entity基类")
+    public class BaseEntity implements Serializable
+    {
+        private static final long serialVersionUID = 1L;
+    
+        /** 搜索值 */
+        @JsonIgnore
+        @TableField(exist = false)
+        private String searchValue;
+    
+        /** 创建者 */
+        @ApiModelProperty(value = "创建者")
+        @TableField(fill = FieldFill.INSERT)
+        private String createBy;
+    
+        /** 创建时间 */
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        @ApiModelProperty(value = "创建时间")
+        @TableField(fill = FieldFill.INSERT)
+        private Date createTime;
+    
+        /** 更新者 */
+        @ApiModelProperty(value = "更新者")
+        @TableField(fill = FieldFill.UPDATE)
+        private String updateBy;
+    
+        /** 更新时间 */
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        @ApiModelProperty(value = "更新时间")
+        @TableField(fill = FieldFill.UPDATE)
+        private Date updateTime;
+    
+        /** 备注 */
+        @ApiModelProperty(value = "备注")
+        private String remark;
+    
+        /** 请求参数 */
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+        @ApiModelProperty(value = "请求参数")
+        @TableField(exist = false)
+        private Map<String, Object> params;
+        
     }
-}
-```
+    ```
+
+    
+
+2. **在zzyl-framework 模块中新增 MyMetaObjectHandler 来处理字段自动填充**
+
+    ```java
+    package com.zzyl.framework.interceptor;
+    
+    import ...
+    
+    /**
+     * MyBatis-Plus 自动填充处理器
+     * 作用：在新增/修改时自动填充审计字段（创建时间、创建人、更新时间、更新人）
+     * 需配合实体字段上的 @TableField(fill = FieldFill.INSERT / INSERT_UPDATE) 使用
+     * @Component 必须加，否则不会被 Spring 注册，自动填充静默失效
+     */
+    @Component
+    public class MyMetaObjectHandler implements MetaObjectHandler {
+    
+        /**
+         * 新增时自动填充
+         * 由 MyBatis-Plus 在执行 insert 时自动回调
+         */
+        @Override
+        public void insertFill(MetaObject metaObject) {
+            // 填充创建时间：当前时间，类型 Date
+            this.strictInsertFill(metaObject, "createTime", Date.class, DateUtils.getNowDate());
+            // 填充创建人：当前登录用户ID，转成 String（说明实体 createBy 是 String 类型）
+            // strict 模式：字段已有值时不会被覆盖
+            this.strictInsertFill(metaObject, "createBy", String.class, String.valueOf(getLoginUser()));
+        }
+    
+        /**
+         * 更新时自动填充
+         * 由 MyBatis-Plus 在执行 updateById / update 等方法时自动回调
+         * 注意：自己手写 XML 的 UPDATE SQL 不会触发
+         */
+        @Override
+        public void updateFill(MetaObject metaObject) {
+            // 填充更新时间：当前时间
+            this.strictUpdateFill(metaObject, "updateTime", Date.class, DateUtils.getNowDate());
+            // 填充更新人：当前登录用户ID，转成 String
+            this.strictUpdateFill(metaObject, "updateBy", String.class, String.valueOf(getLoginUser()));
+        }
+    
+        /**
+         * 获取当前登录人的ID
+         * 从 Spring Security 上下文中取当前登录用户
+         * 若未登录（取不到），兜底返回 1L，避免空指针
+         *
+         * @return 登录人ID
+         */
+        public Long getLoginUser() {
+            // 从 Security 上下文获取当前登录用户
+            LoginUser loginUser = SecurityUtils.getLoginUser();
+            if (loginUser != null) {
+                // 已登录：返回用户ID
+                return loginUser.getUserId();
+            }
+            // 未登录兜底：返回 1L（通常代表系统/超级管理员账号）
+            return 1L;
+        }
+    }
+    ```
+
+    
 
 
 
@@ -2014,11 +1963,13 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
 
 #### 概述：
 
-字典管理用来维护字典类型的数据，例如：状态的启用、禁用；性别的男、女；订单的已下单、支付中、已完成；通常用在如下拉框、单选按钮、复选框、树选择中的数据中，方便系统管理员维护
+字典管理用来维护字典类型的数据
 
 主要功能包括：**字典分类管理**、**字典数据管理**
 
 > 简单的理解：数据字典就是企业中对一些**常量**的统一管理
+>
+> 例如：状态的启用、禁用；性别的男、女；订单的已下单、支付中、已完成；通常用在如下拉框、单选按钮、复选框、树选择中的数据中，方便系统管理员维护
 
 
 
@@ -2817,13 +2768,13 @@ Spring Data Redis中提供了一个高度封装的类：**RedisTemplate<K,V>**
 
 对相关 api 进行了归类封装，将同一类型操作封装为 **Operation 接口**
 
-| 接口类名 (Operation) | 获取该接口的方法              | 对应的 Redis 数据类型   |
-| :------------------- | :---------------------------- | :---------------------- |
-| **ValueOperations**  | `redisTemplate.opsForValue()` | **string** 数据操作     |
-| **HashOperations**   | `redisTemplate.opsForHash()`  | **hash** 类型的数据操作 |
-| **SetOperations**    | `redisTemplate.opsForSet()`   | **set** 类型数据操作    |
-| **ZSetOperations**   | `redisTemplate.opsForZSet()`  | **zset** 类型数据操作   |
-| **ListOperations**   | `redisTemplate.opsForList()`  | **list** 类型的数据操作 |
+| 接口类名 (Operation) | 获取该接口的方法             | 对应的 Redis 数据类型   |
+| :------------------- | :--------------------------- | :---------------------- |
+| **ValueOperations**  | redisTemplate.opsForValue( ) | **string** 数据操作     |
+| **HashOperations**   | redisTemplate.opsForHash( )  | **hash** 类型的数据操作 |
+| **SetOperations**    | redisTemplate.opsForSet( )   | **set** 类型数据操作    |
+| **ZSetOperations**   | redisTemplate.opsForZSet( )  | **zset** 类型数据操作   |
+| **ListOperations**   | redisTemplate.opsForList( )  | **list** 类型的数据操作 |
 
 RedisTemplate 对象调用上述方法后会**返回对应接口的实现类**，此时就可以用链式编程的方式对各自对应的类型进行操作
 
